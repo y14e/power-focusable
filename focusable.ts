@@ -8,24 +8,24 @@
  * @see {@link https://github.com/y14e/focusable-ts}
  */
 
-// -----------------------------------------------------------------------------
-// [Types]
-// -----------------------------------------------------------------------------
+// =============================================================================
+// Types
+// =============================================================================
 
 export interface FocusableOptions {
   readonly active?: HTMLElement | null;
   readonly wrap?: boolean;
 }
 
-// -----------------------------------------------------------------------------
-// [Constants]
-// -----------------------------------------------------------------------------
+// =============================================================================
+// Constants
+// =============================================================================
 
 const FOCUSABLE_SELECTOR = `:is(a[href], area[href], button, embed, iframe, input:not([type="hidden" i]), object, select, details > summary:first-of-type, textarea, [contenteditable]:not([contenteditable="false" i]), [controls], [tabindex]):not(:disabled, [hidden], [inert], [tabindex="-1"])`;
 
-// -----------------------------------------------------------------------------
-// [APIs]
-// -----------------------------------------------------------------------------
+// =============================================================================
+// APIs
+// =============================================================================
 
 const cache: WeakMap<HTMLElement, number> = new WeakMap();
 
@@ -46,11 +46,11 @@ export function getFocusables(
       }
     });
 
-  const sort = (elements: HTMLElement[]) => {
+  function sort(elements: HTMLElement[]) {
     const ordered: HTMLElement[] = [];
     const natural: HTMLElement[] = [];
 
-    const getTabIndex = (element: HTMLElement) => {
+    function getTabIndex(element: HTMLElement) {
       const cached = cache.get(element);
 
       if (cached !== undefined) {
@@ -60,7 +60,7 @@ export function getFocusables(
       const number = Number(element.getAttribute('tabindex'));
       cache.set(element, number);
       return number;
-    };
+    }
 
     elements.forEach((element) => {
       (getTabIndex(element) > 0 ? ordered : natural).push(element);
@@ -68,7 +68,7 @@ export function getFocusables(
 
     ordered.sort((a, b) => getTabIndex(a) - getTabIndex(b));
     return ordered.concat(natural);
-  };
+  }
 
   return sort(elements);
 }
@@ -108,14 +108,14 @@ export function isFocusable(element: HTMLElement): boolean {
     return false;
   }
 
-  const isDisabledDeep = (element: Element) => {
-    const isDisabled = (element: Element) => {
+  function isDisabledDeep(element: Element) {
+    function isDisabled(element: Element) {
       return 'disabled' in element && element.disabled;
-    };
+    }
 
-    const isFormControl = (element: Element) => {
+    function isFormControl(element: Element) {
       return /^(BUTTON|INPUT|SELECT|TEXTAREA)$/.test(element.tagName);
-    };
+    }
 
     for (
       let current: Node | null = element;
@@ -164,7 +164,7 @@ export function isFocusable(element: HTMLElement): boolean {
     }
 
     return false;
-  };
+  }
 
   return (
     element.matches(FOCUSABLE_SELECTOR) &&
@@ -177,9 +177,9 @@ export function isFocusable(element: HTMLElement): boolean {
   );
 }
 
-// -----------------------------------------------------------------------------
-// [Core]
-// -----------------------------------------------------------------------------
+// =============================================================================
+// Core
+// =============================================================================
 
 function getRelativeFocusable(
   container: HTMLElement,
@@ -195,7 +195,7 @@ function getRelativeFocusable(
 
   const { active, wrap = false } = options;
 
-  const getActiveElement = () => {
+  function getActiveElement() {
     let active = document.activeElement;
 
     while (active instanceof HTMLElement && active.shadowRoot?.activeElement) {
@@ -203,11 +203,11 @@ function getRelativeFocusable(
     }
 
     return active instanceof HTMLElement ? active : null;
-  };
+  }
 
   const current = active ?? getActiveElement();
 
-  const containsDeep = (container: Node, node: Node) => {
+  function containsDeep(container: Node, node: Node) {
     for (
       let current: Node | null = node;
       current;
@@ -223,7 +223,7 @@ function getRelativeFocusable(
     }
 
     return false;
-  };
+  }
 
   if (!current || !containsDeep(container, current)) {
     return null;
