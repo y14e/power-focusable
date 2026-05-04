@@ -1,6 +1,6 @@
 # Power Focusable
 
-High-precision focus management utility with shadow DOM support. Handles complex focus rules.
+High-precision focus management utility with shadow DOM support. Handles complex focus rules including tabindex ordering, radio groups, etc.
 
 > [!NOTE]
 > Supports shadow DOM traversal via the composed tree. Only open shadow roots are included; closed shadow roots are not accessible.
