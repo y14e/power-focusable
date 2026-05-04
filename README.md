@@ -10,6 +10,8 @@ npm i power-focusable
 
 ```ts
 // npm
+import * as pf from 'power-focusable';
+// or
 import {
   getFocusables,
   getNextFocusable,
