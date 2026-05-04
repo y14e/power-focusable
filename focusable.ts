@@ -189,7 +189,7 @@ export function isFocusable(element: HTMLElement): boolean {
 function getRelativeFocusable(
   container: HTMLElement,
   offset: number = 0,
-  options: FocusableOptions = {},
+  options: FocusableOptions,
 ) {
   const focusables = getFocusables(container);
   const { length } = focusables;
