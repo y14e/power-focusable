@@ -114,12 +114,12 @@ export function isFocusable(element: HTMLElement): boolean {
   }
 
   function isDisabledDeep(element: Element) {
-    function isDisabled(element: Element) {
-      return 'disabled' in element && element.disabled;
-    }
-
     function isFormControl(element: Element) {
       return /^(BUTTON|INPUT|SELECT|TEXTAREA)$/.test(element.tagName);
+    }
+
+    function isDisabled(element: Element) {
+      return 'disabled' in element && element.disabled;
     }
 
     for (
