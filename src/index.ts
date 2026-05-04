@@ -3,7 +3,7 @@
  * High-precision focus management utility with shadow DOM support.
  * Handles complex focus rules including tabindex ordering, radio groups, etc.
  *
- * @version 2.0.1
+ * @version 2.0.2
  * @author Yusuke Kamiyamane
  * @license MIT
  * @copyright Copyright (c) Yusuke Kamiyamane
@@ -132,15 +132,12 @@ export function getFocusables(
 
     const placeholder = new Set();
 
-    for (const group of map.values()) {
-      if (group.length > 0) {
-        const enabled = group.filter((radio) => isFocusable(radio));
+    for (const radios of map.values()) {
+      if (radios.length > 0) {
+        const enabled = radios.filter((radio) => isFocusable(radio));
 
         if (enabled.length > 0) {
-          placeholder.add(
-            enabled.find((radio: HTMLInputElement) => radio.checked) ??
-              enabled[0],
-          );
+          placeholder.add(enabled.find((radio) => radio.checked) ?? enabled[0]);
         }
       }
     }
