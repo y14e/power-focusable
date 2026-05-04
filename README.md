@@ -26,6 +26,34 @@ import { ... } 'https://cdn.jsdelivr.net/npm/power-focusable/dist/index.js';
 import { ... } 'https://unpkg.com/power-focusable/dist/index.js';
 ```
 
+## 🪄 Options
+
+```ts
+interface PowerFocusableOptions {
+  active?: HTMLElement | null; // default: document.activeElement
+  composed?: boolean;          // default: false
+  wrap?: boolean;              // default: false
+}
+```
+
+### `active`
+
+Specifies the starting element.
+
+Used by `getNextFocusable` and `getPreviousFocusable`.
+
+### `composed`
+
+If `true`, traverses the composed tree (including shadow DOM; slower)
+
+Used by `getFocusables`, `getNextFocusable`, and `getPreviousFocusable`.
+
+### `wrap`
+
+If `true`, wraps around to the first or last element when reaching the end.
+
+Used by `getNextFocusable` and `getPreviousFocusable`.
+
 ## 📦 APIs
 
 ### `getFocusables`
@@ -38,7 +66,7 @@ getFocusables(container);
 //
 // container (optional): HTMLElement (default: document.body)
 
-// Traverses the composed tree (includes shadow DOM; slower)
+// Traverses the composed tree (including shadow DOM; slower)
 getFocusables(container, { composed: true });
 ```
 
@@ -52,13 +80,13 @@ getNextFocusable(container);
 //
 // container (optional): HTMLElement (default: document.body)
 
-// Starting from a specific element
+// Specifies the starting element
 getNextFocusable(container, { active: document.querySelector('.button') });
 
-// Traverses the composed tree (includes shadow DOM; slower)
+// Traverses the composed tree (including shadow DOM; slower)
 getNextFocusable(container, { composed: true });
 
-// Wrap to the first element if necessary
+// Wraps around to the first element when reaching the end.
 getNextFocusable(container, { wrap: true });
 ```
 
@@ -72,13 +100,13 @@ getPreviousFocusable(container);
 //
 // container (optional): HTMLElement (default: document.body)
 
-// Starting from a specific element
+// Specifies the starting element
 getPreviousFocusable(container, { active: document.querySelector('.button') });
 
-// Traverses the composed tree (includes shadow DOM; slower)
+// Traverses the composed tree (including shadow DOM; slower)
 getPreviousFocusable(container, { composed: true });
 
-// Wrap to the last element if necessary
+//Wraps around to the last element when reaching the end.
 getPreviousFocusable(container, { wrap: true });
 
 ```
