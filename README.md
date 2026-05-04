@@ -2,6 +2,10 @@
 
 High-precision focus management utility with shadow DOM support. Handles complex focus rules.
 
+> [!NOTE]
+> Only open shadow roots are traversed when `composed` is enabled.  
+> Closed shadow roots cannot be accessed by JavaScript and are therefore excluded.
+
 ## Install
 
 ```bash
