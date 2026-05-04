@@ -89,7 +89,7 @@ getNextFocusable(container, { active: document.querySelector('.button') });
 // Traverses the composed tree (including shadow DOM; slower)
 getNextFocusable(container, { composed: true });
 
-// Wraps around to the first element when reaching the end.
+// Wraps around to the first element when reaching the end
 getNextFocusable(container, { wrap: true });
 ```
 
@@ -109,7 +109,7 @@ getPreviousFocusable(container, { active: document.querySelector('.button') });
 // Traverses the composed tree (including shadow DOM; slower)
 getPreviousFocusable(container, { composed: true });
 
-//Wraps around to the last element when reaching the end.
+//Wraps around to the last element when reaching the end
 getPreviousFocusable(container, { wrap: true });
 
 ```
