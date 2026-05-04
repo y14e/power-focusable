@@ -33,7 +33,7 @@ export function getFocusables(
   container: HTMLElement = document.body,
 ): HTMLElement[] {
   if (!(container instanceof HTMLElement)) {
-    console.warn('Invalid container element.');
+    console.warn('Invalid container element');
     return [];
   }
 
@@ -79,7 +79,7 @@ export function getNextFocusable(
   options: FocusableOptions = {},
 ): HTMLElement | null {
   if (!(container instanceof HTMLElement)) {
-    console.warn('Invalid container element.');
+    console.warn('Invalid container element');
     return null;
   }
 
@@ -91,7 +91,7 @@ export function getPreviousFocusable(
   options: FocusableOptions = {},
 ): HTMLElement | null {
   if (!(container instanceof HTMLElement)) {
-    console.warn('Invalid container element.');
+    console.warn('Invalid container element');
     return null;
   }
 
@@ -100,7 +100,7 @@ export function getPreviousFocusable(
 
 export function hasFocusable(container: HTMLElement = document.body): boolean {
   if (!(container instanceof HTMLElement)) {
-    console.warn('Invalid container element.');
+    console.warn('Invalid container element');
     return false;
   }
 
@@ -109,7 +109,7 @@ export function hasFocusable(container: HTMLElement = document.body): boolean {
 
 export function isFocusable(element: HTMLElement): boolean {
   if (!(element instanceof HTMLElement)) {
-    console.warn('Invalid target element.');
+    console.warn('Invalid element');
     return false;
   }
 
