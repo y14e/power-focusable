@@ -188,9 +188,9 @@ function getRelativeFocusable(container, offset = 0, options) {
 /**
  * Power Focusable
  * High-precision focus management utility with shadow DOM support.
- * Handles complex focus rules.
+ * Handles complex focus rules including tabindex ordering, radio groups, etc.
  *
- * @version 2.0.0
+ * @version 2.0.1
  * @author Yusuke Kamiyamane
  * @license MIT
  * @copyright Copyright (c) Yusuke Kamiyamane
