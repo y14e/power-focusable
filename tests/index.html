@@ -124,7 +124,7 @@ document.body.appendChild(fs);
 const panel = document.getElementById('panel');
 
 function render() {
-  const list = getFocusables(document.body);
+  const list = getFocusables(document.body, { composed: true });
 
   panel.innerHTML = `
     <b>Focusables (${list.length})</b><br>
@@ -153,13 +153,13 @@ document.addEventListener('focusin', (e) => {
 // ---------------------------------
 document.addEventListener('keydown', (e) => {
   if (e.key === 'ArrowRight') {
-    const next = getNextFocusable(document.body);
+    const next = getNextFocusable(document.body, { composed: true });
     next?.focus();
     e.preventDefault();
   }
 
   if (e.key === 'ArrowLeft') {
-    const prev = getPreviousFocusable(document.body);
+    const prev = getPreviousFocusable(document.body, { composed: true });
     prev?.focus();
     e.preventDefault();
   }

@@ -37,6 +37,9 @@ getFocusables(container);
 // => HTMLElement[]
 //
 // container (optional): HTMLElement (default: document.body)
+
+// Traverses the composed tree (includes shadow DOM; slower)
+getFocusables(container, { composed: true });
 ```
 
 ### `getNextFocusable`
@@ -51,6 +54,9 @@ getNextFocusable(container);
 
 // Starting from a specific element
 getNextFocusable(container, { active: document.querySelector('.button') });
+
+// Traverses the composed tree (includes shadow DOM; slower)
+getNextFocusable(container, { composed: true });
 
 // Wrap to the first element if necessary
 getNextFocusable(container, { wrap: true });
@@ -68,6 +74,9 @@ getPreviousFocusable(container);
 
 // Starting from a specific element
 getPreviousFocusable(container, { active: document.querySelector('.button') });
+
+// Traverses the composed tree (includes shadow DOM; slower)
+getPreviousFocusable(container, { composed: true });
 
 // Wrap to the last element if necessary
 getPreviousFocusable(container, { wrap: true });

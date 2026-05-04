@@ -1,53 +1,44 @@
 // src/index.ts
 var FOCUSABLE_SELECTOR = `:is(a[href], area[href], button, embed, iframe, input:not([type="hidden" i]), object, select, details > summary:first-of-type, textarea, [contenteditable]:not([contenteditable="false" i]), [controls], [tabindex]):not(:disabled, [hidden], [inert], [tabindex="-1"])`;
-var cache = /* @__PURE__ */ new WeakMap();
-function getFocusables(container = document.body) {
+function getFocusables(container = document.body, options = {}) {
   if (!(container instanceof HTMLElement)) {
     console.warn("Invalid container element. Fallback: <body> element.");
     container = document.body;
   }
-  function hasShadow(root) {
-    let isFound = false;
-    function walk2(node) {
-      if (isFound) {
-        return;
-      }
-      if (node instanceof HTMLElement && node.shadowRoot && node.shadowRoot.mode === "open") {
-        isFound = true;
-        return;
-      }
-      node.childNodes.forEach(walk2);
-    }
-    walk2(root);
-    return isFound;
-  }
-  if (!container.querySelector(FOCUSABLE_SELECTOR) && !hasShadow(container)) {
-    return [];
-  }
+  const { composed = false } = options;
   const elements = [];
-  function walk(node) {
-    if (node instanceof HTMLElement) {
-      if (isFocusable(node)) {
-        elements.push(node);
+  if (composed) {
+    let walk2 = function(node) {
+      if (node instanceof HTMLElement) {
+        if (isFocusable(node)) {
+          elements.push(node);
+        }
+        const shadow = node.shadowRoot;
+        if (shadow && shadow.mode === "open") {
+          walk2(shadow);
+        }
+      } else if (node instanceof HTMLSlotElement) {
+        const assigned = node.assignedElements({ flatten: true });
+        if (assigned.length > 0) {
+          assigned.forEach((a) => {
+            walk2(a);
+          });
+          return;
+        }
       }
-      const shadow = node.shadowRoot;
-      if (shadow && shadow.mode === "open") {
-        walk(shadow);
-      }
-    } else if (node instanceof HTMLSlotElement) {
-      const elements2 = node.assignedElements({ flatten: true });
-      if (elements2.length > 0) {
-        elements2.forEach((element) => {
-          walk(element);
-        });
-        return;
-      }
-    }
-    node.childNodes.forEach((child) => {
-      walk(child);
-    });
+      node.childNodes.forEach((child) => {
+        walk2(child);
+      });
+    };
+    walk2(container);
+  } else {
+    elements.push(
+      ...[
+        ...container.querySelectorAll(FOCUSABLE_SELECTOR)
+      ].filter(isFocusable)
+    );
   }
-  walk(container);
+  const cache = /* @__PURE__ */ new WeakMap();
   function sort(elements2) {
     const ordered = [];
     const natural = [];
@@ -68,7 +59,6 @@ function getFocusables(container = document.body) {
   }
   function normalizeRadioGroup(elements2) {
     let map = null;
-    const result = [];
     for (const element of elements2) {
       if (element instanceof HTMLInputElement && element.type === "radio" && element.name) {
         if (!map) {
@@ -76,23 +66,28 @@ function getFocusables(container = document.body) {
         }
         const key = `${element.form?.id ?? "no-form"}::${element.name}`;
         (map.get(key) ?? map.set(key, []).get(key)).push(element);
-      } else {
-        result.push(element);
       }
     }
     if (!map) {
-      return result;
+      return elements2;
     }
+    const placeholder = /* @__PURE__ */ new Set();
     for (const group of map.values()) {
-      const enabled = group.filter((radio) => isFocusable(radio));
-      if (enabled.length === 0) {
-        continue;
+      if (group.length > 0) {
+        const enabled = group.filter((radio) => isFocusable(radio));
+        if (enabled.length > 0) {
+          placeholder.add(
+            enabled.find((radio) => radio.checked) ?? enabled[0]
+          );
+        }
       }
-      result.push(
-        enabled.find((radio) => radio.checked) ?? enabled[0]
-      );
     }
-    return result;
+    return elements2.filter((element) => {
+      if (element instanceof HTMLInputElement && element.type === "radio" && element.name) {
+        return placeholder.has(element);
+      }
+      return true;
+    });
   }
   return normalizeRadioGroup(sort(elements));
 }
@@ -155,12 +150,12 @@ function isFocusable(element) {
   });
 }
 function getRelativeFocusable(container, offset = 0, options) {
-  const focusables = getFocusables(container);
+  const { active, composed = false, wrap = false } = options;
+  const focusables = getFocusables(container, { composed });
   const { length } = focusables;
   if (length === 0) {
     return null;
   }
-  const { active, wrap = false } = options;
   function getActiveElement() {
     let active2 = document.activeElement;
     while (active2 instanceof HTMLElement && active2.shadowRoot?.activeElement) {
@@ -195,7 +190,7 @@ function getRelativeFocusable(container, offset = 0, options) {
  * High-precision focus management utility with shadow DOM support.
  * Handles complex focus rules.
  *
- * @version 1.0.0
+ * @version 2.0.0
  * @author Yusuke Kamiyamane
  * @license MIT
  * @copyright Copyright (c) Yusuke Kamiyamane

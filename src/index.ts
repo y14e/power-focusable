@@ -3,7 +3,7 @@
  * High-precision focus management utility with shadow DOM support.
  * Handles complex focus rules.
  *
- * @version 1.0.0
+ * @version 2.0.0
  * @author Yusuke Kamiyamane
  * @license MIT
  * @copyright Copyright (c) Yusuke Kamiyamane
@@ -16,6 +16,7 @@
 
 export interface PowerFocusableOptions {
   readonly active?: HTMLElement | null;
+  readonly composed?: boolean;
   readonly wrap?: boolean;
 }
 
@@ -29,75 +30,57 @@ const FOCUSABLE_SELECTOR = `:is(a[href], area[href], button, embed, iframe, inpu
 // APIs
 // -----------------------------------------------------------------------------
 
-const cache: WeakMap<HTMLElement, number> = new WeakMap();
-
 export function getFocusables(
   container: HTMLElement = document.body,
+  options: Omit<PowerFocusableOptions, 'active' | 'wrap'> = {},
 ): HTMLElement[] {
   if (!(container instanceof HTMLElement)) {
     console.warn('Invalid container element. Fallback: <body> element.');
     container = document.body;
   }
 
-  function hasShadow(root: Node): boolean {
-    let isFound = false;
-
-    function walk(node: Node) {
-      if (isFound) {
-        return;
-      }
-
-      if (
-        node instanceof HTMLElement &&
-        node.shadowRoot &&
-        node.shadowRoot.mode === 'open'
-      ) {
-        isFound = true;
-        return;
-      }
-
-      node.childNodes.forEach(walk);
-    }
-
-    walk(root);
-    return isFound;
-  }
-
-  if (!container.querySelector(FOCUSABLE_SELECTOR) && !hasShadow(container)) {
-    return [];
-  }
-
+  const { composed = false } = options;
   const elements: HTMLElement[] = [];
 
-  function walk(node: Node) {
-    if (node instanceof HTMLElement) {
-      if (isFocusable(node)) {
-        elements.push(node);
+  if (composed) {
+    function walk(node: Node) {
+      if (node instanceof HTMLElement) {
+        if (isFocusable(node)) {
+          elements.push(node);
+        }
+
+        const shadow = node.shadowRoot;
+
+        if (shadow && shadow.mode === 'open') {
+          walk(shadow);
+        }
+      } else if (node instanceof HTMLSlotElement) {
+        const assigned = node.assignedElements({ flatten: true });
+
+        if (assigned.length > 0) {
+          assigned.forEach((a) => {
+            walk(a);
+          });
+
+          return;
+        }
       }
 
-      const shadow = node.shadowRoot;
-
-      if (shadow && shadow.mode === 'open') {
-        walk(shadow);
-      }
-    } else if (node instanceof HTMLSlotElement) {
-      const elements = node.assignedElements({ flatten: true });
-
-      if (elements.length > 0) {
-        elements.forEach((element) => {
-          walk(element);
-        });
-
-        return;
-      }
+      node.childNodes.forEach((child) => {
+        walk(child);
+      });
     }
 
-    node.childNodes.forEach((child) => {
-      walk(child);
-    });
+    walk(container);
+  } else {
+    elements.push(
+      ...[
+        ...container.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR),
+      ].filter(isFocusable),
+    );
   }
 
-  walk(container);
+  const cache = new WeakMap<HTMLElement, number>();
 
   function sort(elements: HTMLElement[]) {
     const ordered: HTMLElement[] = [];
@@ -125,7 +108,6 @@ export function getFocusables(
 
   function normalizeRadioGroup(elements: HTMLElement[]) {
     let map: Map<string, HTMLInputElement[]> | null = null;
-    const result: HTMLElement[] = [];
 
     for (const element of elements) {
       if (
@@ -141,28 +123,39 @@ export function getFocusables(
         (
           map.get(key) ?? (map.set(key, []).get(key) as HTMLInputElement[])
         ).push(element);
-      } else {
-        result.push(element);
       }
     }
 
     if (!map) {
-      return result;
+      return elements;
     }
+
+    const placeholder = new Set();
 
     for (const group of map.values()) {
-      const enabled = group.filter((radio) => isFocusable(radio));
+      if (group.length > 0) {
+        const enabled = group.filter((radio) => isFocusable(radio));
 
-      if (enabled.length === 0) {
-        continue;
+        if (enabled.length > 0) {
+          placeholder.add(
+            enabled.find((radio: HTMLInputElement) => radio.checked) ??
+              enabled[0],
+          );
+        }
       }
-
-      result.push(
-        (enabled.find((radio) => radio.checked) ?? enabled[0]) as HTMLElement,
-      );
     }
 
-    return result;
+    return elements.filter((element) => {
+      if (
+        element instanceof HTMLInputElement &&
+        element.type === 'radio' &&
+        element.name
+      ) {
+        return placeholder.has(element);
+      }
+
+      return true;
+    });
   }
 
   return normalizeRadioGroup(sort(elements));
@@ -285,14 +278,13 @@ function getRelativeFocusable(
   offset: number = 0,
   options: PowerFocusableOptions,
 ) {
-  const focusables = getFocusables(container);
+  const { active, composed = false, wrap = false } = options;
+  const focusables = getFocusables(container, { composed });
   const { length } = focusables;
 
   if (length === 0) {
     return null;
   }
-
-  const { active, wrap = false } = options;
 
   function getActiveElement() {
     let active = document.activeElement;
