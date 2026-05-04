@@ -10,8 +10,6 @@ npm i power-focusable
 
 ```ts
 // npm
-import * as pf from 'power-focusable';
-// or
 import {
   getFocusables,
   getNextFocusable,
@@ -21,11 +19,11 @@ import {
 } from 'power-focusable';
 
 // CDNs
-import ... 'https://esm.sh/power-focusable'
+import { ... } 'https://esm.sh/power-focusable'
 // or
-import ... 'https://cdn.jsdelivr.net/npm/power-focusable/dist/index.js';
+import { ... } 'https://cdn.jsdelivr.net/npm/power-focusable/dist/index.js';
 // or
-import ... 'https://unpkg.com/power-focusable/dist/index.js';
+import { ... } 'https://unpkg.com/power-focusable/dist/index.js';
 ```
 
 ## 📦 APIs
