@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Focusable Hell + Tester</title>
+<style>
+  body { font-family: sans-serif; }
+  section { margin: 16px 0; padding: 8px; border: 1px solid #ccc; }
+  .active { outline: 3px solid red; }
+  .panel {
+    position: fixed;
+    top: 8px;
+    right: 8px;
+    background: #111;
+    color: #0f0;
+    padding: 12px;
+    font-size: 12px;
+    max-height: 80vh;
+    overflow: auto;
+    width: 320px;
+  }
+</style>
+</head>
+<body>
+
+<section>
+  <h2>Light DOM</h2>
+  <button id="btn-1">Button 1</button>
+  <button id="btn-2" tabindex="3">TabIndex 3</button>
+  <button id="btn-3" tabindex="1">TabIndex 1</button>
+  <div tabindex="0" id="div-1">Div focusable</div>
+</section>
+
+<section id="shadow-host"></section>
+
+<section>
+  <h2>Disabled / inert</h2>
+  <button disabled id="disabled-btn">Disabled</button>
+  <div inert>
+    <button id="inert-btn">Inert Button</button>
+  </div>
+</section>
+
+<div class="panel" id="panel"></div>
+
+<script type="module">
+import {
+  getFocusables,
+  getNextFocusable,
+  getPreviousFocusable,
+  isFocusable
+} from './index.js'; // ← あなたのやつ
+
+// ---------------------------------
+// Shadow setup（前と同じ）
+// ---------------------------------
+const host = document.getElementById('shadow-host');
+const shadow = host.attachShadow({ mode: 'open' });
+
+shadow.innerHTML = `
+  <section>
+    <h2>Shadow Root</h2>
+    <button id="shadow-btn-1">Shadow Button 1</button>
+    <slot name="slot-a"></slot>
+    <div id="nested-host"></div>
+  </section>
+`;
+
+const slotted1 = Object.assign(document.createElement('button'), {
+  textContent: 'Slotted Button A',
+  slot: 'slot-a',
+  id: 'slot-btn-a'
+});
+document.body.appendChild(slotted1);
+
+const slotted2 = Object.assign(document.createElement('button'), {
+  textContent: 'Slotted Button B (tabindex=2)',
+  slot: 'slot-a',
+  id: 'slot-btn-b',
+  tabIndex: 2
+});
+document.body.appendChild(slotted2);
+
+const nestedHost = shadow.getElementById('nested-host');
+const nestedShadow = nestedHost.attachShadow({ mode: 'open' });
+
+nestedShadow.innerHTML = `
+  <div>
+    <button id="nested-btn-1">Nested Shadow Button</button>
+    <slot name="slot-b"></slot>
+  </div>
+`;
+
+const slottedNested = Object.assign(document.createElement('button'), {
+  textContent: 'Nested Slotted Button',
+  slot: 'slot-b',
+  id: 'slot-btn-nested'
+});
+document.body.appendChild(slottedNested);
+
+// ---------------------------------
+// fieldset
+// ---------------------------------
+const fs = document.createElement('fieldset');
+fs.disabled = true;
+
+const legend = document.createElement('legend');
+legend.textContent = 'Legend';
+fs.appendChild(legend);
+
+const okBtn = document.createElement('button');
+okBtn.textContent = 'Inside Legend';
+legend.appendChild(okBtn);
+
+const ngBtn = document.createElement('button');
+ngBtn.textContent = 'Disabled by fieldset';
+fs.appendChild(ngBtn);
+
+document.body.appendChild(fs);
+
+// ---------------------------------
+// Debug UI
+// ---------------------------------
+const panel = document.getElementById('panel');
+
+function render() {
+  const list = getFocusables(document.body);
+
+  panel.innerHTML = `
+    <b>Focusables (${list.length})</b><br>
+    ${list.map((el, i) => {
+      const id = el.id || el.textContent?.trim();
+      const ti = el.getAttribute('tabindex');
+      return `${i}: ${id} (tabindex=${ti ?? 0})`;
+    }).join('<br>')}
+  `;
+}
+
+render();
+
+// ---------------------------------
+// フォーカス可視化
+// ---------------------------------
+document.addEventListener('focusin', (e) => {
+  document.querySelectorAll('.active').forEach(el => el.classList.remove('active'));
+  if (e.target instanceof HTMLElement) {
+    e.target.classList.add('active');
+  }
+});
+
+// ---------------------------------
+// キーボードナビ検証
+// ---------------------------------
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'ArrowRight') {
+    const next = getNextFocusable(document.body);
+    next?.focus();
+    e.preventDefault();
+  }
+
+  if (e.key === 'ArrowLeft') {
+    const prev = getPreviousFocusable(document.body);
+    prev?.focus();
+    e.preventDefault();
+  }
+
+  if (e.key === 'r') {
+    render();
+  }
+});
+
+// ---------------------------------
+// クリックで isFocusable 確認
+// ---------------------------------
+document.addEventListener('click', (e) => {
+  if (!(e.target instanceof HTMLElement)) return;
+
+  console.log(
+    'isFocusable:',
+    e.target,
+    isFocusable(e.target)
+  );
+});
+</script>
+
+</body>
+</html>

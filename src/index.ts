@@ -1,18 +1,20 @@
 /**
- * focusable.ts
+ * Power Focusable
+ * High-precision focus management utility with shadow DOM support.
+ * Handles complex focus rules.
  *
- * @version 1.0.2
+ * @version 1.0.0
  * @author Yusuke Kamiyamane
  * @license MIT
  * @copyright Copyright (c) Yusuke Kamiyamane
- * @see {@link https://github.com/y14e/focusable-ts}
+ * @see {@link https://github.com/y14e/power-focusable}
  */
 
 // -----------------------------------------------------------------------------
 // Types
 // -----------------------------------------------------------------------------
 
-export interface FocusableOptions {
+export interface PowerFocusableOptions {
   readonly active?: HTMLElement | null;
   readonly wrap?: boolean;
 }
@@ -37,15 +39,65 @@ export function getFocusables(
     container = document.body;
   }
 
+  function hasShadow(root: Node): boolean {
+    let isFound = false;
+
+    function walk(node: Node) {
+      if (isFound) {
+        return;
+      }
+
+      if (
+        node instanceof HTMLElement &&
+        node.shadowRoot &&
+        node.shadowRoot.mode === 'open'
+      ) {
+        isFound = true;
+        return;
+      }
+
+      node.childNodes.forEach(walk);
+    }
+
+    walk(root);
+    return isFound;
+  }
+
+  if (!container.querySelector(FOCUSABLE_SELECTOR) && !hasShadow(container)) {
+    return [];
+  }
+
   const elements: HTMLElement[] = [];
 
-  container
-    .querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR)
-    .forEach((node) => {
+  function walk(node: Node) {
+    if (node instanceof HTMLElement) {
       if (isFocusable(node)) {
         elements.push(node);
       }
+
+      const shadow = node.shadowRoot;
+
+      if (shadow && shadow.mode === 'open') {
+        walk(shadow);
+      }
+    } else if (node instanceof HTMLSlotElement) {
+      const elements = node.assignedElements({ flatten: true });
+
+      if (elements.length > 0) {
+        elements.forEach((element) => {
+          walk(element);
+        });
+
+        return;
+      }
+    }
+
+    node.childNodes.forEach((child) => {
+      walk(child);
     });
+  }
+
+  walk(container);
 
   function sort(elements: HTMLElement[]) {
     const ordered: HTMLElement[] = [];
@@ -68,15 +120,57 @@ export function getFocusables(
     });
 
     ordered.sort((a, b) => getTabIndex(a) - getTabIndex(b));
-    return ordered.concat(natural);
+    return [...ordered, ...natural];
   }
 
-  return sort(elements);
+  function normalizeRadioGroup(elements: HTMLElement[]) {
+    let map: Map<string, HTMLInputElement[]> | null = null;
+    const result: HTMLElement[] = [];
+
+    for (const element of elements) {
+      if (
+        element instanceof HTMLInputElement &&
+        element.type === 'radio' &&
+        element.name
+      ) {
+        if (!map) {
+          map = new Map();
+        }
+
+        const key = `${element.form?.id ?? 'no-form'}::${element.name}`;
+        (
+          map.get(key) ?? (map.set(key, []).get(key) as HTMLInputElement[])
+        ).push(element);
+      } else {
+        result.push(element);
+      }
+    }
+
+    if (!map) {
+      return result;
+    }
+
+    for (const group of map.values()) {
+      const enabled = group.filter((radio) => isFocusable(radio));
+
+      if (enabled.length === 0) {
+        continue;
+      }
+
+      result.push(
+        (enabled.find((radio) => radio.checked) ?? enabled[0]) as HTMLElement,
+      );
+    }
+
+    return result;
+  }
+
+  return normalizeRadioGroup(sort(elements));
 }
 
 export function getNextFocusable(
   container: HTMLElement = document.body,
-  options: FocusableOptions = {},
+  options: PowerFocusableOptions = {},
 ): HTMLElement | null {
   if (!(container instanceof HTMLElement)) {
     console.warn('Invalid container element. Fallback: <body> element.');
@@ -88,7 +182,7 @@ export function getNextFocusable(
 
 export function getPreviousFocusable(
   container: HTMLElement = document.body,
-  options: FocusableOptions = {},
+  options: PowerFocusableOptions = {},
 ): HTMLElement | null {
   if (!(container instanceof HTMLElement)) {
     console.warn('Invalid container element. Fallback: <body> element.');
@@ -189,7 +283,7 @@ export function isFocusable(element: HTMLElement): boolean {
 function getRelativeFocusable(
   container: HTMLElement,
   offset: number = 0,
-  options: FocusableOptions,
+  options: PowerFocusableOptions,
 ) {
   const focusables = getFocusables(container);
   const { length } = focusables;
