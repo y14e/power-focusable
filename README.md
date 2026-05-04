@@ -1,17 +1,29 @@
-# focusable.ts
+# Power Focusable
 
-TS snippet for detecting and getting focusable element(s).
+High-precision focus management utility with shadow DOM support. Handles complex focus rules.
 
-## Usage
+## Install
+
+```bash
+npm i power-focusable
+```
 
 ```ts
+// npm
 import {
   getFocusables,
   getNextFocusable,
   getPreviousFocusable,
   hasFocusable,
   isFocusable,
-} from './focusable';
+} from 'power-focusable';
+
+// CDNs
+import { ... } 'https://esm.sh/power-focusable'
+// or
+import { ... } 'https://cdn.jsdelivr.net/npm/power-focusable/dist/index.js';
+// or
+import { ... } 'https://unpkg.com/power-focusable/dist/index.js';
 ```
 
 ## 📦 APIs
