@@ -3,7 +3,7 @@
  * High-precision focus management utility with shadow DOM support.
  * Handles complex focus rules including tabindex ordering, radio groups, etc.
  *
- * @version 2.0.3
+ * @version 2.1.0
  * @author Yusuke Kamiyamane
  * @license MIT
  * @copyright Copyright (c) Yusuke Kamiyamane
@@ -30,8 +30,6 @@ const FOCUSABLE_SELECTOR = `:is(a[href], area[href], button, embed, iframe, inpu
 // APIs
 // -----------------------------------------------------------------------------
 
-const tabIndexCache = new WeakMap<HTMLElement, number>();
-
 export function getFocusables(
   container: HTMLElement = document.body,
   options: Omit<PowerFocusableOptions, 'active' | 'wrap'> = {},
@@ -48,7 +46,7 @@ export function getFocusables(
     function walk(node: Node) {
       if (node instanceof HTMLElement) {
         if (isFocusable(node)) {
-          elements.push(node);
+          elements[elements.length] = node;
         }
 
         const shadow = node.shadowRoot;
@@ -60,107 +58,36 @@ export function getFocusables(
         const assigned = node.assignedElements({ flatten: true });
 
         if (assigned.length > 0) {
-          assigned.forEach((a) => {
-            walk(a);
-          });
+          for (let i = 0, l = assigned.length; i < l; i++) {
+            walk(assigned[i] as Node);
+          }
 
           return;
         }
       }
 
-      node.childNodes.forEach((child) => {
-        walk(child);
-      });
+      const children = node.childNodes;
+
+      for (let i = 0, l = children.length; i < l; i++) {
+        walk(children[i] as Node);
+      }
     }
 
     walk(container);
   } else {
-    elements.push(
-      ...[
-        ...container.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR),
-      ].filter(isFocusable),
-    );
+    const candidates =
+      container.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR);
+
+    for (let i = 0, l = candidates.length; i < l; i++) {
+      const candidate = candidates[i] as HTMLElement;
+
+      if (isFocusable(candidate)) {
+        elements[elements.length] = candidate;
+      }
+    }
   }
 
-  // Tabindex ordering
-  function sort(elements: HTMLElement[]) {
-    const ordered: HTMLElement[] = [];
-    const natural: HTMLElement[] = [];
-
-    function getTabIndex(element: HTMLElement) {
-      const cached = tabIndexCache.get(element);
-
-      if (cached !== undefined) {
-        return cached;
-      }
-
-      const number = Number(element.getAttribute('tabindex'));
-      tabIndexCache.set(element, number);
-      return number;
-    }
-
-    elements.forEach((element) => {
-      (getTabIndex(element) > 0 ? ordered : natural).push(element);
-    });
-
-    ordered.sort((a, b) => getTabIndex(a) - getTabIndex(b));
-    return [...ordered, ...natural];
-  }
-
-  // Radio groups
-  function normalize(elements: HTMLElement[]) {
-    let map: Map<string, HTMLInputElement[]> | null = null;
-
-    for (const element of elements) {
-      if (
-        element instanceof HTMLInputElement &&
-        element.type === 'radio' &&
-        element.name
-      ) {
-        if (!map) {
-          map = new Map();
-        }
-
-        const key = `${element.form?.id ?? 'no-form'}::${element.name}`;
-        (
-          map.get(key) ?? (map.set(key, []).get(key) as HTMLInputElement[])
-        ).push(element);
-      }
-    }
-
-    if (!map) {
-      return elements;
-    }
-
-    const placeholder = new Set<HTMLInputElement>();
-
-    for (const group of map.values()) {
-      if (group.length > 0) {
-        const enabled = group.filter((radio) => isFocusable(radio));
-
-        if (enabled.length > 0) {
-          placeholder.add(
-            (enabled.find((radio) => radio.checked) ??
-              enabled[0]) as HTMLInputElement,
-          );
-        }
-      }
-    }
-
-    return elements.filter((element) => {
-      if (
-        element instanceof HTMLInputElement &&
-        element.type === 'radio' &&
-        element.name
-      ) {
-        return placeholder.has(element);
-      }
-
-      return true;
-    });
-  }
-
-  return normalize(sort(elements));
+  return normalizeRadioGroup(sortByTabIndex(elements));
 }
 
 export function getNextFocusable(
@@ -202,73 +129,39 @@ export function isFocusable(element: HTMLElement): boolean {
     return false;
   }
 
-  function isDisabledDeep(element: Element) {
-    function isFormControl(element: Element) {
-      return /^(BUTTON|INPUT|SELECT|TEXTAREA)$/.test(element.tagName);
-    }
-
-    function isDisabled(element: Element) {
-      return 'disabled' in element && element.disabled;
-    }
-
-    for (
-      let current: Node | null = element;
-      current;
-      current =
-        current instanceof ShadowRoot
-          ? current.mode === 'open'
-            ? current.host
-            : null
-          : current.parentNode
-    ) {
-      if (!(current instanceof Element)) {
-        continue;
-      }
-
-      // [disabled]
-      if (
-        current === element &&
-        isFormControl(current) &&
-        isDisabled(current)
-      ) {
-        return true;
-      }
-
-      // [inert]
-      if (current.matches('[inert]')) {
-        return true;
-      }
-
-      // fieldset[disabled]
-      if (
-        isFormControl(element) &&
-        current.tagName === 'FIELDSET' &&
-        isDisabled(current)
-      ) {
-        if (
-          current
-            .querySelector(':scope > legend:first-of-type')
-            ?.contains(element)
-        ) {
-          continue;
-        }
-
-        return true;
-      }
-    }
-
+  // Fast path [hidden], [inert]
+  if (element.hasAttribute('hidden') || element.hasAttribute('inert')) {
     return false;
   }
 
-  return (
-    element.matches(FOCUSABLE_SELECTOR) &&
-    !isDisabledDeep(element) &&
-    element.checkVisibility({
+  // Fast path [tabindex="-1"]
+  const tabIndex = element.getAttribute('tabindex');
+
+  if (tabIndex !== null) {
+    if (Number(tabIndex) < 0) {
+      return false;
+    }
+  }
+
+  if (!element.matches(FOCUSABLE_SELECTOR)) {
+    return false;
+  }
+
+  if (isDisabledDeep(element)) {
+    return false;
+  }
+
+  if (
+    !element.checkVisibility({
       contentVisibilityAuto: true,
       opacityProperty: true,
       visibilityProperty: true,
     })
-  );
+  ) {
+    return false;
+  }
+
+  return true;
 }
 
 // -----------------------------------------------------------------------------
@@ -280,7 +173,7 @@ function getRelativeFocusable(
   offset: number = 0,
   options: PowerFocusableOptions,
 ) {
-  const { active, composed = false, wrap = false } = options;
+  const { active: a = null, composed = false, wrap = false } = options;
   const focusables = getFocusables(container, { composed });
   const { length } = focusables;
 
@@ -288,41 +181,13 @@ function getRelativeFocusable(
     return null;
   }
 
-  function getActiveElement() {
-    let active = document.activeElement;
+  const active = a ?? getActiveElement();
 
-    while (active instanceof HTMLElement && active.shadowRoot?.activeElement) {
-      active = active.shadowRoot.activeElement;
-    }
-
-    return active instanceof HTMLElement ? active : null;
-  }
-
-  const current = active ?? getActiveElement();
-
-  function containsDeep(container: Node, node: Node) {
-    for (
-      let current: Node | null = node;
-      current;
-      current = !(current instanceof ShadowRoot)
-        ? current.parentNode
-        : current.mode === 'open'
-          ? current.host
-          : null
-    ) {
-      if (current === container) {
-        return true;
-      }
-    }
-
-    return false;
-  }
-
-  if (!current || !containsDeep(container, current)) {
+  if (active === null || !containsDeep(container, active)) {
     return null;
   }
 
-  const currentIndex = focusables.indexOf(current);
+  const currentIndex = focusables.indexOf(active as HTMLElement);
 
   if (currentIndex === -1) {
     return null;
@@ -335,4 +200,191 @@ function getRelativeFocusable(
   }
 
   return focusables[(offsetIndex + length) % length] ?? null;
+}
+
+// -----------------------------------------------------------------------------
+// Utils
+// -----------------------------------------------------------------------------
+
+function containsDeep(container: Node, element: Node) {
+  function walk(node: Node | null): boolean {
+    if (node === null) {
+      return false;
+    }
+
+    if (node === container) {
+      return true;
+    }
+
+    if (node instanceof ShadowRoot) {
+      return node.mode === 'open' ? walk(node.host) : false;
+    }
+
+    return walk(node.parentNode);
+  }
+
+  return walk(element);
+}
+
+function getActiveElement() {
+  function walk(node: Element | null): Element | null {
+    if (node === null) {
+      return null;
+    }
+
+    const active = node.shadowRoot?.activeElement;
+    return active ? walk(active) : node;
+  }
+
+  return walk(document.activeElement);
+}
+
+const tabIndexCache = new WeakMap<HTMLElement, number>();
+
+function getTabIndex(element: HTMLElement) {
+  const cached = tabIndexCache.get(element);
+
+  if (cached !== undefined) {
+    return cached;
+  }
+
+  const number = Number(element.getAttribute('tabindex'));
+  tabIndexCache.set(element, number);
+  return number;
+}
+
+function isDisabled(element: Element) {
+  return 'disabled' in element && element.disabled;
+}
+
+function isDisabledDeep(element: Element) {
+  function walk(node: Node | null): boolean {
+    if (node === null) {
+      return false;
+    }
+
+    if (node instanceof ShadowRoot) {
+      return node.mode === 'open' ? walk(node.host) : false;
+    }
+
+    if (!(node instanceof Element)) {
+      return walk(node.parentNode);
+    }
+
+    // [disabled]
+    if (node === element && isFormControl(node) && isDisabled(node)) {
+      return true;
+    }
+
+    // [inert]
+    if (node.hasAttribute('inert')) {
+      return true;
+    }
+
+    // fieldset[disabled]
+    if (
+      isFormControl(element) &&
+      node.tagName === 'FIELDSET' &&
+      isDisabled(node)
+    ) {
+      if (
+        node.querySelector(':scope > legend:first-of-type')?.contains(element)
+      ) {
+        return walk(node.parentNode);
+      }
+
+      return true;
+    }
+
+    return walk(node.parentNode);
+  }
+
+  return walk(element);
+}
+
+function isFormControl(element: Element) {
+  const tagName = element.tagName;
+  return (
+    tagName === 'BUTTON' ||
+    tagName === 'INPUT' ||
+    tagName === 'SELECT' ||
+    tagName === 'TEXTAREA'
+  );
+}
+
+function normalizeRadioGroup(elements: HTMLElement[]) {
+  let map: Map<string, HTMLInputElement[]> | null = null;
+
+  for (let i = 0, l = elements.length; i < l; i++) {
+    const element = elements[i];
+    if (
+      element instanceof HTMLInputElement &&
+      element.type === 'radio' &&
+      element.name
+    ) {
+      if (!map) {
+        map = new Map();
+      }
+
+      const key = `${element.form?.id ?? 'no-form'}::${element.name}`;
+      const group = (map.get(key) ??
+        map.set(key, []).get(key)) as HTMLInputElement[];
+      group[group.length] = element;
+    }
+  }
+
+  if (!map) {
+    return elements;
+  }
+
+  const placeholder = new Set();
+
+  for (const group of map.values()) {
+    if (group.length > 0) {
+      // Unsafe fast path
+      // const enabled = group;
+      const enabled = group.filter(isFocusable);
+
+      if (enabled.length > 0) {
+        placeholder.add(enabled.find((radio) => radio.checked) ?? enabled[0]);
+      }
+    }
+  }
+
+  return elements.filter((element) => {
+    if (
+      element instanceof HTMLInputElement &&
+      element.type === 'radio' &&
+      element.name
+    ) {
+      return placeholder.has(element);
+    }
+
+    return true;
+  });
+}
+
+function sortByTabIndex(elements: HTMLElement[]) {
+  const ordered: HTMLElement[] = [];
+  const natural: HTMLElement[] = [];
+
+  for (let i = 0, l = elements.length; i < l; i++) {
+    const element = elements[i] as HTMLElement;
+    const target = getTabIndex(element) > 0 ? ordered : natural;
+    target[target.length] = element;
+  }
+
+  ordered.sort((a, b) => getTabIndex(a) - getTabIndex(b));
+  let count = 0;
+  const sorted = new Array(ordered.length + natural.length);
+
+  for (let i = 0, l = ordered.length; i < l; i++) {
+    sorted[count++] = ordered[i];
+  }
+
+  for (let i = 0, l = natural.length; i < l; i++) {
+    sorted[count++] = natural[i];
+  }
+
+  return sorted;
 }
