@@ -1,5 +1,6 @@
 // src/index.ts
 var FOCUSABLE_SELECTOR = `:is(a[href], area[href], button, embed, iframe, input:not([type="hidden" i]), object, select, details > summary:first-of-type, textarea, [contenteditable]:not([contenteditable="false" i]), [controls], [tabindex]):not(:disabled, [hidden], [inert], [tabindex="-1"])`;
+var tabIndexCache = /* @__PURE__ */ new WeakMap();
 function getFocusables(container = document.body, options = {}) {
   if (!(container instanceof HTMLElement)) {
     console.warn("Invalid container element. Fallback: <body> element.");
@@ -38,17 +39,17 @@ function getFocusables(container = document.body, options = {}) {
       ].filter(isFocusable)
     );
   }
-  const cache = /* @__PURE__ */ new WeakMap();
   function sort(elements2) {
     const ordered = [];
     const natural = [];
     function getTabIndex(element) {
-      const cached = cache.get(element);
+      const cached = tabIndexCache.get(element);
       if (cached !== void 0) {
+        console.log('hit cache', cached);
         return cached;
       }
       const number = Number(element.getAttribute("tabindex"));
-      cache.set(element, number);
+      tabIndexCache.set(element, number);
       return number;
     }
     elements2.forEach((element) => {

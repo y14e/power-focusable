@@ -30,6 +30,8 @@ const FOCUSABLE_SELECTOR = `:is(a[href], area[href], button, embed, iframe, inpu
 // APIs
 // -----------------------------------------------------------------------------
 
+const tabIndexCache = new WeakMap<HTMLElement, number>();
+
 export function getFocusables(
   container: HTMLElement = document.body,
   options: Omit<PowerFocusableOptions, 'active' | 'wrap'> = {},
@@ -81,21 +83,19 @@ export function getFocusables(
   }
 
   // Tabindex ordering
-  const cache = new WeakMap<HTMLElement, number>();
-
   function sort(elements: HTMLElement[]) {
     const ordered: HTMLElement[] = [];
     const natural: HTMLElement[] = [];
 
     function getTabIndex(element: HTMLElement) {
-      const cached = cache.get(element);
+      const cached = tabIndexCache.get(element);
 
       if (cached !== undefined) {
         return cached;
       }
 
       const number = Number(element.getAttribute('tabindex'));
-      cache.set(element, number);
+      tabIndexCache.set(element, number);
       return number;
     }
 
