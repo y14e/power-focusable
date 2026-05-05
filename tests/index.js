@@ -57,7 +57,7 @@ function getFocusables(container = document.body, options = {}) {
     ordered.sort((a, b) => getTabIndex(a) - getTabIndex(b));
     return [...ordered, ...natural];
   }
-  function normalizeRadioGroup(elements2) {
+  function normalize(elements2) {
     let map = null;
     for (const element of elements2) {
       if (element instanceof HTMLInputElement && element.type === "radio" && element.name) {
@@ -89,7 +89,7 @@ function getFocusables(container = document.body, options = {}) {
       return true;
     });
   }
-  return normalizeRadioGroup(sort(elements));
+  return normalize(sort(elements));
 }
 function getNextFocusable(container = document.body, options = {}) {
   if (!(container instanceof HTMLElement)) {
@@ -190,7 +190,7 @@ function getRelativeFocusable(container, offset = 0, options) {
  * High-precision focus management utility with shadow DOM support.
  * Handles complex focus rules including tabindex ordering, radio groups, etc.
  *
- * @version 2.0.1
+ * @version 2.0.3
  * @author Yusuke Kamiyamane
  * @license MIT
  * @copyright Copyright (c) Yusuke Kamiyamane

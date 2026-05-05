@@ -153,13 +153,13 @@ document.addEventListener('focusin', (e) => {
 // ---------------------------------
 document.addEventListener('keydown', (e) => {
   if (e.key === 'ArrowRight') {
-    const next = getNextFocusable(document.body, { composed: true });
+    const next = getNextFocusable(document.body, { composed: true, wrap: true });
     next?.focus();
     e.preventDefault();
   }
 
   if (e.key === 'ArrowLeft') {
-    const prev = getPreviousFocusable(document.body, { composed: true });
+    const prev = getPreviousFocusable(document.body, { composed: true, wrap: true });
     prev?.focus();
     e.preventDefault();
   }
