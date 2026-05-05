@@ -67,7 +67,7 @@ Returns all focusable elements within the container.
 getFocusables(container);
 // => HTMLElement[]
 //
-// container (optional): HTMLElement (default: document.body)
+// container (optional): HTMLElement (default: <body>)
 
 // Traverses the composed tree (including shadow DOM; slower)
 getFocusables(container, { composed: true });
@@ -81,7 +81,7 @@ Returns the next focusable element within the container, starting from `document
 getNextFocusable(container);
 // => HTMLElement | null
 //
-// container (optional): HTMLElement (default: document.body)
+// container (optional): HTMLElement (default: <body>)
 
 // Specifies the starting element
 getNextFocusable(container, { active: document.querySelector('.button') });
@@ -89,7 +89,7 @@ getNextFocusable(container, { active: document.querySelector('.button') });
 // Traverses the composed tree (including shadow DOM; slower)
 getNextFocusable(container, { composed: true });
 
-// Wraps around to the first element when reaching the end.
+// Wraps around to the first element when reaching the end
 getNextFocusable(container, { wrap: true });
 ```
 
@@ -101,7 +101,7 @@ Returns the previous focusable element within the container, starting from `docu
 getPreviousFocusable(container);
 // => HTMLElement | null
 //
-// container (optional): HTMLElement (default: document.body)
+// container (optional): HTMLElement (default: <body>)
 
 // Specifies the starting element
 getPreviousFocusable(container, { active: document.querySelector('.button') });
@@ -109,7 +109,7 @@ getPreviousFocusable(container, { active: document.querySelector('.button') });
 // Traverses the composed tree (including shadow DOM; slower)
 getPreviousFocusable(container, { composed: true });
 
-//Wraps around to the last element when reaching the end.
+//Wraps around to the last element when reaching the end
 getPreviousFocusable(container, { wrap: true });
 
 ```
@@ -122,7 +122,7 @@ Returns whether the container contains at least one focusable element.
 hasFocusable(container);
 // => boolean
 //
-// container (optional): HTMLElement (default: document.body)
+// container (optional): HTMLElement (default: <body>)
 ```
 
 ### `isFocusable`
