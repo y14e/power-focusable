@@ -45,7 +45,6 @@ function getFocusables(container = document.body, options = {}) {
     function getTabIndex(element) {
       const cached = tabIndexCache.get(element);
       if (cached !== void 0) {
-        console.log('hit cache', cached);
         return cached;
       }
       const number = Number(element.getAttribute("tabindex"));
