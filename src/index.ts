@@ -3,7 +3,7 @@
  * High-precision focus management utility with shadow DOM support.
  * Handles complex focus rules including tabindex ordering, radio groups, etc.
  *
- * @version 2.1.2
+ * @version 2.1.3
  * @author Yusuke Kamiyamane
  * @license MIT
  * @copyright Copyright (c) Yusuke Kamiyamane
@@ -57,7 +57,7 @@ export function getFocusables(
       } else if (node instanceof HTMLSlotElement) {
         const assigned = node.assignedElements({ flatten: true });
 
-        if (assigned.length > 0) {
+        if (assigned.length) {
           for (let i = 0, l = assigned.length; i < l; i++) {
             walk(assigned[i] as Node);
           }
@@ -123,7 +123,7 @@ export function hasFocusable(
     container = document.body;
   }
 
-  return getFocusables(container, options).length > 0;
+  return !!getFocusables(container, options).length;
 }
 
 export function isFocusable(element: HTMLElement): boolean {
@@ -140,7 +140,7 @@ export function isFocusable(element: HTMLElement): boolean {
   // Fast path [tabindex="-1"]
   const tabIndex = element.getAttribute('tabindex');
 
-  if (tabIndex !== null) {
+  if (tabIndex) {
     if (Number(tabIndex) < 0) {
       return false;
     }
@@ -180,13 +180,13 @@ function getRelativeFocusable(
   const focusables = getFocusables(container, { composed });
   const { length } = focusables;
 
-  if (length === 0) {
+  if (!length) {
     return null;
   }
 
   const active = a ?? getActiveElement();
 
-  if (active === null || !containsDeep(container, active)) {
+  if (!active || !containsDeep(container, active)) {
     return null;
   }
 
@@ -211,7 +211,7 @@ function getRelativeFocusable(
 
 function containsDeep(container: Node, element: Node) {
   function walk(node: Node | null): boolean {
-    if (node === null) {
+    if (!node) {
       return false;
     }
 
@@ -231,7 +231,7 @@ function containsDeep(container: Node, element: Node) {
 
 function getActiveElement() {
   function walk(node: Element | null): Element | null {
-    if (node === null) {
+    if (!node) {
       return null;
     }
 
@@ -262,7 +262,7 @@ function isDisabled(element: Element) {
 
 function isDisabledDeep(element: Element) {
   function walk(node: Node | null): boolean {
-    if (node === null) {
+    if (!node) {
       return false;
     }
 
@@ -343,12 +343,12 @@ function normalizeRadioGroup(elements: HTMLElement[]) {
   const placeholder = new Set();
 
   for (const group of map.values()) {
-    if (group.length > 0) {
+    if (group.length) {
       // Unsafe fast path
       // const enabled = group;
       const enabled = group.filter(isFocusable);
 
-      if (enabled.length > 0) {
+      if (enabled.length) {
         placeholder.add(enabled.find((radio) => radio.checked) ?? enabled[0]);
       }
     }

@@ -19,7 +19,7 @@ function getFocusables(container = document.body, options = {}) {
         }
       } else if (node instanceof HTMLSlotElement) {
         const assigned = node.assignedElements({ flatten: true });
-        if (assigned.length > 0) {
+        if (assigned.length) {
           for (let i = 0, l = assigned.length; i < l; i++) {
             walk2(assigned[i]);
           }
@@ -62,7 +62,7 @@ function hasFocusable(container = document.body, options = {}) {
     console.warn("Invalid container element. Fallback: <body> element.");
     container = document.body;
   }
-  return getFocusables(container, options).length > 0;
+  return !!getFocusables(container, options).length;
 }
 function isFocusable(element) {
   if (!(element instanceof HTMLElement)) {
@@ -73,7 +73,7 @@ function isFocusable(element) {
     return false;
   }
   const tabIndex = element.getAttribute("tabindex");
-  if (tabIndex !== null) {
+  if (tabIndex) {
     if (Number(tabIndex) < 0) {
       return false;
     }
@@ -97,11 +97,11 @@ function getRelativeFocusable(container, offset = 0, options) {
   const { active: a = null, composed = false, wrap = false } = options;
   const focusables = getFocusables(container, { composed });
   const { length } = focusables;
-  if (length === 0) {
+  if (!length) {
     return null;
   }
   const active = a ?? getActiveElement();
-  if (active === null || !containsDeep(container, active)) {
+  if (!active || !containsDeep(container, active)) {
     return null;
   }
   const currentIndex = focusables.indexOf(active);
@@ -116,7 +116,7 @@ function getRelativeFocusable(container, offset = 0, options) {
 }
 function containsDeep(container, element) {
   function walk(node) {
-    if (node === null) {
+    if (!node) {
       return false;
     }
     if (node === container) {
@@ -131,7 +131,7 @@ function containsDeep(container, element) {
 }
 function getActiveElement() {
   function walk(node) {
-    if (node === null) {
+    if (!node) {
       return null;
     }
     const active = node.shadowRoot?.activeElement;
@@ -154,7 +154,7 @@ function isDisabled(element) {
 }
 function isDisabledDeep(element) {
   function walk(node) {
-    if (node === null) {
+    if (!node) {
       return false;
     }
     if (node instanceof ShadowRoot) {
@@ -201,9 +201,9 @@ function normalizeRadioGroup(elements) {
   }
   const placeholder = /* @__PURE__ */ new Set();
   for (const group of map.values()) {
-    if (group.length > 0) {
+    if (group.length) {
       const enabled = group.filter(isFocusable);
-      if (enabled.length > 0) {
+      if (enabled.length) {
         placeholder.add(enabled.find((radio) => radio.checked) ?? enabled[0]);
       }
     }
@@ -239,7 +239,7 @@ function sortByTabIndex(elements) {
  * High-precision focus management utility with shadow DOM support.
  * Handles complex focus rules including tabindex ordering, radio groups, etc.
  *
- * @version 2.1.2
+ * @version 2.1.3
  * @author Yusuke Kamiyamane
  * @license MIT
  * @copyright Copyright (c) Yusuke Kamiyamane
