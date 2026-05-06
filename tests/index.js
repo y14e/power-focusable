@@ -72,9 +72,9 @@ function isFocusable(element) {
   if (element.hasAttribute("hidden") || element.hasAttribute("inert")) {
     return false;
   }
-  const tabIndex = element.getAttribute("tabindex");
-  if (tabIndex) {
-    if (Number(tabIndex) < 0) {
+  const index = element.getAttribute("tabindex");
+  if (index) {
+    if (Number(index) < 0) {
       return false;
     }
   }
@@ -93,7 +93,7 @@ function isFocusable(element) {
   }
   return true;
 }
-function getRelativeFocusable(container, offset = 0, options) {
+function getRelativeFocusable(container, offset, options) {
   const { active: a = null, composed = false, wrap = false } = options;
   const focusables = getFocusables(container, { composed });
   const { length } = focusables;
@@ -145,9 +145,9 @@ function getTabIndex(element) {
   if (cached !== void 0) {
     return cached;
   }
-  const number = Number(element.getAttribute("tabindex"));
-  tabIndexCache.set(element, number);
-  return number;
+  const index = Number(element.getAttribute("tabindex"));
+  tabIndexCache.set(element, index);
+  return index;
 }
 function isDisabled(element) {
   return "disabled" in element && element.disabled;
@@ -187,26 +187,22 @@ function normalizeRadioGroup(elements) {
   let map = null;
   for (let i = 0, l = elements.length; i < l; i++) {
     const element = elements[i];
-    if (element instanceof HTMLInputElement && element.type === "radio" && element.name) {
-      if (!map) {
-        map = /* @__PURE__ */ new Map();
-      }
-      const key = `${element.form?.id ?? "no-form"}::${element.name}`;
-      const group = map.get(key) ?? map.set(key, []).get(key);
-      group[group.length] = element;
+    if (!(element instanceof HTMLInputElement) || element.type !== "radio" || !element.name) {
+      continue;
     }
+    if (!map) {
+      map = /* @__PURE__ */ new Map();
+    }
+    const key = `${element.form?.id ?? "no-form"}::${element.name}`;
+    const group = map.get(key) ?? map.set(key, []).get(key);
+    group[group.length] = element;
   }
   if (!map) {
     return elements;
   }
   const placeholder = /* @__PURE__ */ new Set();
   for (const group of map.values()) {
-    if (group.length) {
-      const enabled = group.filter(isFocusable);
-      if (enabled.length) {
-        placeholder.add(enabled.find((radio) => radio.checked) ?? enabled[0]);
-      }
-    }
+    placeholder.add(group.find((radio) => radio.checked) ?? group[0]);
   }
   return elements.filter((element) => {
     if (element instanceof HTMLInputElement && element.type === "radio" && element.name) {
@@ -239,7 +235,7 @@ function sortByTabIndex(elements) {
  * High-precision focus management utility with shadow DOM support.
  * Handles complex focus rules including tabindex ordering, radio groups, etc.
  *
- * @version 2.1.3
+ * @version 2.1.4
  * @author Yusuke Kamiyamane
  * @license MIT
  * @copyright Copyright (c) Yusuke Kamiyamane

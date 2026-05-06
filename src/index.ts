@@ -3,7 +3,7 @@
  * High-precision focus management utility with shadow DOM support.
  * Handles complex focus rules including tabindex ordering, radio groups, etc.
  *
- * @version 2.1.3
+ * @version 2.1.4
  * @author Yusuke Kamiyamane
  * @license MIT
  * @copyright Copyright (c) Yusuke Kamiyamane
@@ -173,7 +173,7 @@ export function isFocusable(element: HTMLElement): boolean {
 
 function getRelativeFocusable(
   container: HTMLElement,
-  offset: number = 0,
+  offset: number,
   options: PowerFocusableOptions,
 ) {
   const { active: a = null, composed = false, wrap = false } = options;
@@ -320,20 +320,23 @@ function normalizeRadioGroup(elements: HTMLElement[]) {
 
   for (let i = 0, l = elements.length; i < l; i++) {
     const element = elements[i];
-    if (
-      element instanceof HTMLInputElement &&
-      element.type === 'radio' &&
-      element.name
-    ) {
-      if (!map) {
-        map = new Map();
-      }
 
-      const key = `${element.form?.id ?? 'no-form'}::${element.name}`;
-      const group = (map.get(key) ??
-        map.set(key, []).get(key)) as HTMLInputElement[];
-      group[group.length] = element;
+    if (
+      !(element instanceof HTMLInputElement) ||
+      element.type !== 'radio' ||
+      !element.name
+    ) {
+      continue;
     }
+
+    if (!map) {
+      map = new Map();
+    }
+
+    const key = `${element.form?.id ?? 'no-form'}::${element.name}`;
+    const group = (map.get(key) ??
+      map.set(key, []).get(key)) as HTMLInputElement[];
+    group[group.length] = element;
   }
 
   if (!map) {
@@ -343,15 +346,14 @@ function normalizeRadioGroup(elements: HTMLElement[]) {
   const placeholder = new Set();
 
   for (const group of map.values()) {
-    if (group.length) {
-      // Unsafe fast path
-      // const enabled = group;
-      const enabled = group.filter(isFocusable);
+    /* Safety
+    const radios = group.filter(isFocusable);
 
-      if (enabled.length) {
-        placeholder.add(enabled.find((radio) => radio.checked) ?? enabled[0]);
-      }
+    if (radios.length) {
+      placeholder.add(radios.find((radio) => radio.checked) ?? radios[0]);
     }
+    */
+    placeholder.add(group.find((radio) => radio.checked) ?? group[0]);
   }
 
   return elements.filter((element) => {
