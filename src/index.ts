@@ -138,10 +138,10 @@ export function isFocusable(element: HTMLElement): boolean {
   }
 
   // Fast path [tabindex="-1"]
-  const tabIndex = element.getAttribute('tabindex');
+  const index = element.getAttribute('tabindex');
 
-  if (tabIndex) {
-    if (Number(tabIndex) < 0) {
+  if (index) {
+    if (Number(index) < 0) {
       return false;
     }
   }
@@ -251,9 +251,9 @@ function getTabIndex(element: HTMLElement) {
     return cached;
   }
 
-  const number = Number(element.getAttribute('tabindex'));
-  tabIndexCache.set(element, number);
-  return number;
+  const index = Number(element.getAttribute('tabindex'));
+  tabIndexCache.set(element, index);
+  return index;
 }
 
 function isDisabled(element: Element) {
