@@ -49,7 +49,7 @@ Used by `getNextFocusable` and `getPreviousFocusable`.
 
 If `true`, traverses the composed tree (including shadow DOM; slower)
 
-Used by `getFocusables`, `getNextFocusable`, `getPreviousFocusable`, and `hasFocusables`.
+Used by `getFocusables`, `getNextFocusable`, `getPreviousFocusable`, and `hasFocusable`.
 
 ### `wrap`
 
