@@ -49,7 +49,7 @@ Used by `getNextFocusable` and `getPreviousFocusable`.
 
 If `true`, traverses the composed tree (including shadow DOM; slower)
 
-Used by `getFocusables`, `getNextFocusable`, and `getPreviousFocusable`.
+Used by `getFocusables`, `getNextFocusable`, `getPreviousFocusable`, and `hasFocusables`.
 
 ### `wrap`
 
@@ -123,6 +123,9 @@ hasFocusable(container);
 // => boolean
 //
 // container (optional): HTMLElement (default: <body>)
+
+// Traverses the composed tree (including shadow DOM; slower)
+hasFocusable(container, { composed: true });
 ```
 
 ### `isFocusable`

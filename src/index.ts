@@ -3,7 +3,7 @@
  * High-precision focus management utility with shadow DOM support.
  * Handles complex focus rules including tabindex ordering, radio groups, etc.
  *
- * @version 2.1.0
+ * @version 2.1.1
  * @author Yusuke Kamiyamane
  * @license MIT
  * @copyright Copyright (c) Yusuke Kamiyamane
@@ -114,13 +114,16 @@ export function getPreviousFocusable(
   return getRelativeFocusable(container, -1, options);
 }
 
-export function hasFocusable(container: HTMLElement = document.body): boolean {
+export function hasFocusable(
+  container: HTMLElement = document.body,
+  options: Omit<PowerFocusableOptions, 'active' | 'wrap'> = {},
+): boolean {
   if (!(container instanceof HTMLElement)) {
     console.warn('Invalid container element. Fallback: <body> element.');
     container = document.body;
   }
 
-  return getFocusables(container).length > 0;
+  return getFocusables(container, options).length > 0;
 }
 
 export function isFocusable(element: HTMLElement): boolean {
