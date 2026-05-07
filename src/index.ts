@@ -33,7 +33,7 @@ const FOCUSABLE_SELECTOR = `:is(a[href], area[href], button, embed, iframe, inpu
 export function getFocusables(
   container: HTMLElement = document.body,
   options: Omit<PowerFocusableOptions, 'active' | 'wrap'> = {},
-): HTMLElement[] {
+) {
   if (!(container instanceof HTMLElement)) {
     console.warn('Invalid container element. Fallback: <body> element.');
     container = document.body;
@@ -43,7 +43,7 @@ export function getFocusables(
   const elements: HTMLElement[] = [];
 
   if (composed) {
-    function walk(node: Node) {
+    function traverse(node: Node) {
       if (node instanceof HTMLElement) {
         if (isFocusable(node)) {
           elements[elements.length] = node;
@@ -52,14 +52,16 @@ export function getFocusables(
         const shadow = node.shadowRoot;
 
         if (shadow && shadow.mode === 'open') {
-          walk(shadow);
+          traverse(shadow);
         }
-      } else if (node instanceof HTMLSlotElement) {
+      }
+
+      if (node instanceof HTMLSlotElement) {
         const assigned = node.assignedElements({ flatten: true });
 
         if (assigned.length) {
           for (let i = 0, l = assigned.length; i < l; i++) {
-            walk(assigned[i] as Node);
+            traverse(assigned[i] as Node);
           }
 
           return;
@@ -69,11 +71,11 @@ export function getFocusables(
       const children = node.childNodes;
 
       for (let i = 0, l = children.length; i < l; i++) {
-        walk(children[i] as Node);
+        traverse(children[i] as Node);
       }
     }
 
-    walk(container);
+    traverse(container);
   } else {
     const candidates =
       container.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR);
@@ -93,7 +95,7 @@ export function getFocusables(
 export function getNextFocusable(
   container: HTMLElement = document.body,
   options: PowerFocusableOptions = {},
-): HTMLElement | null {
+) {
   if (!(container instanceof HTMLElement)) {
     console.warn('Invalid container element. Fallback: <body> element.');
     container = document.body;
@@ -105,7 +107,7 @@ export function getNextFocusable(
 export function getPreviousFocusable(
   container: HTMLElement = document.body,
   options: PowerFocusableOptions = {},
-): HTMLElement | null {
+) {
   if (!(container instanceof HTMLElement)) {
     console.warn('Invalid container element. Fallback: <body> element.');
     container = document.body;
@@ -117,7 +119,7 @@ export function getPreviousFocusable(
 export function hasFocusable(
   container: HTMLElement = document.body,
   options: Omit<PowerFocusableOptions, 'active' | 'wrap'> = {},
-): boolean {
+) {
   if (!(container instanceof HTMLElement)) {
     console.warn('Invalid container element. Fallback: <body> element.');
     container = document.body;
@@ -126,7 +128,7 @@ export function hasFocusable(
   return !!getFocusables(container, options).length;
 }
 
-export function isFocusable(element: HTMLElement): boolean {
+export function isFocusable(element: HTMLElement) {
   if (!(element instanceof HTMLElement)) {
     console.warn('Invalid element');
     return false;
@@ -208,36 +210,32 @@ function getRelativeFocusable(
 // -----------------------------------------------------------------------------
 
 function containsDeep(container: Node, element: Node) {
-  function walk(node: Node | null): boolean {
-    if (!node) {
-      return false;
-    }
+  let current: Node | null = element;
 
-    if (node === container) {
+  while (current) {
+    if (current === container) {
       return true;
     }
 
-    if (node instanceof ShadowRoot) {
-      return node.mode === 'open' ? walk(node.host) : false;
-    }
-
-    return walk(node.parentNode);
+    current =
+      current instanceof ShadowRoot
+        ? current.mode === 'open'
+          ? current.host
+          : null
+        : current.parentNode;
   }
 
-  return walk(element);
+  return false;
 }
 
 function getActiveElement() {
-  function walk(node: Element | null): Element | null {
-    if (!node) {
-      return null;
-    }
+  let current = document.activeElement;
 
-    const active = node.shadowRoot?.activeElement;
-    return active ? walk(active) : node;
+  while (current?.shadowRoot?.activeElement) {
+    current = current.shadowRoot.activeElement;
   }
 
-  return walk(document.activeElement);
+  return current;
 }
 
 const tabIndexCache = new WeakMap<HTMLElement, number>();
@@ -255,52 +253,56 @@ function getTabIndex(element: HTMLElement) {
 }
 
 function isDisabled(element: Element) {
-  return 'disabled' in element && element.disabled;
+  return 'disabled' in element && !!element.disabled;
 }
 
 function isDisabledDeep(element: Element) {
-  function walk(node: Node | null): boolean {
-    if (!node) {
-      return false;
+  let current: Node | null = element;
+
+  while (current) {
+    if (current instanceof ShadowRoot) {
+      if (current.mode !== 'open') {
+        return false;
+      }
+
+      current = current.host;
+      continue;
     }
 
-    if (node instanceof ShadowRoot) {
-      return node.mode === 'open' ? walk(node.host) : false;
-    }
-
-    if (!(node instanceof Element)) {
-      return walk(node.parentNode);
+    if (!(current instanceof Element)) {
+      current = current.parentNode;
+      continue;
     }
 
     // [disabled]
-    if (node === element && isFormControl(node) && isDisabled(node)) {
+    if (current === element && isFormControl(current) && isDisabled(current)) {
       return true;
     }
 
     // [inert]
-    if (node.hasAttribute('inert')) {
+    if (current.hasAttribute('inert')) {
       return true;
     }
 
     // fieldset[disabled]
     if (
       isFormControl(element) &&
-      node.tagName === 'FIELDSET' &&
-      isDisabled(node)
+      current.tagName === 'FIELDSET' &&
+      isDisabled(current)
     ) {
       if (
-        node.querySelector(':scope > legend:first-of-type')?.contains(element)
+        !current
+          .querySelector(':scope > legend:first-of-type')
+          ?.contains(element)
       ) {
-        return walk(node.parentNode);
+        return true;
       }
-
-      return true;
     }
 
-    return walk(node.parentNode);
+    current = current.parentNode;
   }
 
-  return walk(element);
+  return false;
 }
 
 function isFormControl(element: Element) {
@@ -313,17 +315,21 @@ function isFormControl(element: Element) {
   );
 }
 
+function isUngroupedRadio(element: Element) {
+  return (
+    element instanceof HTMLInputElement &&
+    element.type === 'radio' &&
+    !!element.name
+  );
+}
+
 function normalizeRadioGroup(elements: HTMLElement[]) {
   let map: Map<string, HTMLInputElement[]> | null = null;
 
   for (let i = 0, l = elements.length; i < l; i++) {
-    const element = elements[i];
+    const element = elements[i] as HTMLInputElement;
 
-    if (
-      !(element instanceof HTMLInputElement) ||
-      element.type !== 'radio' ||
-      !element.name
-    ) {
+    if (!isUngroupedRadio(element)) {
       continue;
     }
 
@@ -355,11 +361,7 @@ function normalizeRadioGroup(elements: HTMLElement[]) {
   }
 
   return elements.filter((element) => {
-    if (
-      element instanceof HTMLInputElement &&
-      element.type === 'radio' &&
-      element.name
-    ) {
+    if (isUngroupedRadio(element)) {
       return placeholder.has(element);
     }
 

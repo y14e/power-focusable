@@ -8,30 +8,31 @@ function getFocusables(container = document.body, options = {}) {
   const { composed = false } = options;
   const elements = [];
   if (composed) {
-    let walk2 = function(node) {
+    let traverse2 = function(node) {
       if (node instanceof HTMLElement) {
         if (isFocusable(node)) {
           elements[elements.length] = node;
         }
         const shadow = node.shadowRoot;
         if (shadow && shadow.mode === "open") {
-          walk2(shadow);
+          traverse2(shadow);
         }
-      } else if (node instanceof HTMLSlotElement) {
+      }
+      if (node instanceof HTMLSlotElement) {
         const assigned = node.assignedElements({ flatten: true });
         if (assigned.length) {
           for (let i = 0, l = assigned.length; i < l; i++) {
-            walk2(assigned[i]);
+            traverse2(assigned[i]);
           }
           return;
         }
       }
       const children = node.childNodes;
       for (let i = 0, l = children.length; i < l; i++) {
-        walk2(children[i]);
+        traverse2(children[i]);
       }
     };
-    walk2(container);
+    traverse2(container);
   } else {
     const candidates = container.querySelectorAll(FOCUSABLE_SELECTOR);
     for (let i = 0, l = candidates.length; i < l; i++) {
@@ -73,10 +74,8 @@ function isFocusable(element) {
     return false;
   }
   const index = element.getAttribute("tabindex");
-  if (index) {
-    if (Number(index) < 0) {
-      return false;
-    }
+  if (index && Number(index) < 0) {
+    return false;
   }
   if (!element.matches(FOCUSABLE_SELECTOR)) {
     return false;
@@ -115,29 +114,21 @@ function getRelativeFocusable(container, offset, options) {
   return focusables[(offsetIndex + length) % length] ?? null;
 }
 function containsDeep(container, element) {
-  function walk(node) {
-    if (!node) {
-      return false;
-    }
-    if (node === container) {
+  let current = element;
+  while (current) {
+    if (current === container) {
       return true;
     }
-    if (node instanceof ShadowRoot) {
-      return node.mode === "open" ? walk(node.host) : false;
-    }
-    return walk(node.parentNode);
+    current = current instanceof ShadowRoot ? current.mode === "open" ? current.host : null : current.parentNode;
   }
-  return walk(element);
+  return false;
 }
 function getActiveElement() {
-  function walk(node) {
-    if (!node) {
-      return null;
-    }
-    const active = node.shadowRoot?.activeElement;
-    return active ? walk(active) : node;
+  let current = document.activeElement;
+  while (current?.shadowRoot?.activeElement) {
+    current = current.shadowRoot.activeElement;
   }
-  return walk(document.activeElement);
+  return current;
 }
 var tabIndexCache = /* @__PURE__ */ new WeakMap();
 function getTabIndex(element) {
@@ -150,44 +141,49 @@ function getTabIndex(element) {
   return index;
 }
 function isDisabled(element) {
-  return "disabled" in element && element.disabled;
+  return "disabled" in element && !!element.disabled;
 }
 function isDisabledDeep(element) {
-  function walk(node) {
-    if (!node) {
-      return false;
-    }
-    if (node instanceof ShadowRoot) {
-      return node.mode === "open" ? walk(node.host) : false;
-    }
-    if (!(node instanceof Element)) {
-      return walk(node.parentNode);
-    }
-    if (node === element && isFormControl(node) && isDisabled(node)) {
-      return true;
-    }
-    if (node.hasAttribute("inert")) {
-      return true;
-    }
-    if (isFormControl(element) && node.tagName === "FIELDSET" && isDisabled(node)) {
-      if (node.querySelector(":scope > legend:first-of-type")?.contains(element)) {
-        return walk(node.parentNode);
+  let current = element;
+  while (current) {
+    if (current instanceof ShadowRoot) {
+      if (current.mode !== "open") {
+        return false;
       }
+      current = current.host;
+      continue;
+    }
+    if (!(current instanceof Element)) {
+      current = current.parentNode;
+      continue;
+    }
+    if (current === element && isFormControl(current) && isDisabled(current)) {
       return true;
     }
-    return walk(node.parentNode);
+    if (current.hasAttribute("inert")) {
+      return true;
+    }
+    if (isFormControl(element) && current.tagName === "FIELDSET" && isDisabled(current)) {
+      if (!current.querySelector(":scope > legend:first-of-type")?.contains(element)) {
+        return true;
+      }
+    }
+    current = current.parentNode;
   }
-  return walk(element);
+  return false;
 }
 function isFormControl(element) {
-  const tagName = element.tagName;
-  return tagName === "BUTTON" || tagName === "INPUT" || tagName === "SELECT" || tagName === "TEXTAREA";
+  const name = element.tagName;
+  return name === "BUTTON" || name === "INPUT" || name === "SELECT" || name === "TEXTAREA";
+}
+function isUngroupedRadio(element) {
+  return element instanceof HTMLInputElement && element.type === "radio" && !!element.name;
 }
 function normalizeRadioGroup(elements) {
   let map = null;
   for (let i = 0, l = elements.length; i < l; i++) {
     const element = elements[i];
-    if (!(element instanceof HTMLInputElement) || element.type !== "radio" || !element.name) {
+    if (!isUngroupedRadio(element)) {
       continue;
     }
     if (!map) {
@@ -205,7 +201,7 @@ function normalizeRadioGroup(elements) {
     placeholder.add(group.find((radio) => radio.checked) ?? group[0]);
   }
   return elements.filter((element) => {
-    if (element instanceof HTMLInputElement && element.type === "radio" && element.name) {
+    if (isUngroupedRadio(element)) {
       return placeholder.has(element);
     }
     return true;
@@ -235,7 +231,7 @@ function sortByTabIndex(elements) {
  * High-precision focus management utility with shadow DOM support.
  * Handles complex focus rules including tabindex ordering, radio groups, etc.
  *
- * @version 2.1.4
+ * @version 2.1.5
  * @author Yusuke Kamiyamane
  * @license MIT
  * @copyright Copyright (c) Yusuke Kamiyamane
