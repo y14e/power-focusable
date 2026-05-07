@@ -3,7 +3,7 @@
  * High-precision focus management utility with shadow DOM support.
  * Handles complex focus rules including tabindex ordering, radio groups, etc.
  *
- * @version 2.1.5
+ * @version 2.1.6
  * @author Yusuke Kamiyamane
  * @license MIT
  * @copyright Copyright (c) Yusuke Kamiyamane
@@ -31,7 +31,7 @@ const FOCUSABLE_SELECTOR = `:is(a[href], area[href], button, embed, iframe, inpu
 // -----------------------------------------------------------------------------
 
 export function getFocusables(
-  container: HTMLElement = document.body,
+  container = document.body,
   options: Omit<PowerFocusableOptions, 'active' | 'wrap'> = {},
 ) {
   if (!(container instanceof HTMLElement)) {
@@ -93,7 +93,7 @@ export function getFocusables(
 }
 
 export function getNextFocusable(
-  container: HTMLElement = document.body,
+  container = document.body,
   options: PowerFocusableOptions = {},
 ) {
   if (!(container instanceof HTMLElement)) {
@@ -105,7 +105,7 @@ export function getNextFocusable(
 }
 
 export function getPreviousFocusable(
-  container: HTMLElement = document.body,
+  container = document.body,
   options: PowerFocusableOptions = {},
 ) {
   if (!(container instanceof HTMLElement)) {
@@ -117,7 +117,7 @@ export function getPreviousFocusable(
 }
 
 export function hasFocusable(
-  container: HTMLElement = document.body,
+  container = document.body,
   options: Omit<PowerFocusableOptions, 'active' | 'wrap'> = {},
 ) {
   if (!(container instanceof HTMLElement)) {
@@ -176,15 +176,17 @@ function getRelativeFocusable(
   offset: number,
   options: PowerFocusableOptions,
 ) {
-  const { active: a = null, composed = false, wrap = false } = options;
+  const {
+    active = getActiveElement(),
+    composed = false,
+    wrap = false,
+  } = options;
   const focusables = getFocusables(container, { composed });
   const { length } = focusables;
 
   if (!length) {
     return null;
   }
-
-  const active = a ?? getActiveElement();
 
   if (!active || !containsDeep(container, active)) {
     return null;

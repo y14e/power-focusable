@@ -93,13 +93,16 @@ function isFocusable(element) {
   return true;
 }
 function getRelativeFocusable(container, offset, options) {
-  const { active: a = null, composed = false, wrap = false } = options;
+  const {
+    active = getActiveElement(),
+    composed = false,
+    wrap = false
+  } = options;
   const focusables = getFocusables(container, { composed });
   const { length } = focusables;
   if (!length) {
     return null;
   }
-  const active = a ?? getActiveElement();
   if (!active || !containsDeep(container, active)) {
     return null;
   }
@@ -231,7 +234,7 @@ function sortByTabIndex(elements) {
  * High-precision focus management utility with shadow DOM support.
  * Handles complex focus rules including tabindex ordering, radio groups, etc.
  *
- * @version 2.1.5
+ * @version 2.1.6
  * @author Yusuke Kamiyamane
  * @license MIT
  * @copyright Copyright (c) Yusuke Kamiyamane
