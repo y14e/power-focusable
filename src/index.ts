@@ -3,7 +3,7 @@
  * High-precision focus management utility with shadow DOM support.
  * Handles complex focus rules including tabindex ordering, radio groups, etc.
  *
- * @version 2.1.4
+ * @version 2.1.5
  * @author Yusuke Kamiyamane
  * @license MIT
  * @copyright Copyright (c) Yusuke Kamiyamane
@@ -140,10 +140,8 @@ export function isFocusable(element: HTMLElement): boolean {
   // Fast path [tabindex="-1"]
   const index = element.getAttribute('tabindex');
 
-  if (index) {
-    if (Number(index) < 0) {
-      return false;
-    }
+  if (index && Number(index) < 0) {
+    return false;
   }
 
   if (!element.matches(FOCUSABLE_SELECTOR)) {
@@ -306,12 +304,12 @@ function isDisabledDeep(element: Element) {
 }
 
 function isFormControl(element: Element) {
-  const tagName = element.tagName;
+  const name = element.tagName;
   return (
-    tagName === 'BUTTON' ||
-    tagName === 'INPUT' ||
-    tagName === 'SELECT' ||
-    tagName === 'TEXTAREA'
+    name === 'BUTTON' ||
+    name === 'INPUT' ||
+    name === 'SELECT' ||
+    name === 'TEXTAREA'
   );
 }
 
