@@ -3,7 +3,7 @@
  * High-precision focus management utility with shadow DOM support.
  * Handles complex focus rules including tabindex ordering, radio groups, etc.
  *
- * @version 2.1.6
+ * @version 2.1.7
  * @author Yusuke Kamiyamane
  * @license MIT
  * @copyright Copyright (c) Yusuke Kamiyamane
@@ -43,7 +43,7 @@ export function getFocusables(
   const elements: HTMLElement[] = [];
 
   if (composed) {
-    function traverse(node: Node) {
+    function traverse(node: Element | Node | ShadowRoot) {
       if (node instanceof HTMLElement) {
         if (isFocusable(node)) {
           elements[elements.length] = node;
@@ -61,7 +61,11 @@ export function getFocusables(
 
         if (assigned.length) {
           for (let i = 0, l = assigned.length; i < l; i++) {
-            traverse(assigned[i] as Node);
+            const a = assigned[i];
+
+            if (a) {
+              traverse(a);
+            }
           }
 
           return;
@@ -71,7 +75,11 @@ export function getFocusables(
       const children = node.childNodes;
 
       for (let i = 0, l = children.length; i < l; i++) {
-        traverse(children[i] as Node);
+        const child = children[i];
+
+        if (child) {
+          traverse(child);
+        }
       }
     }
 
@@ -81,9 +89,9 @@ export function getFocusables(
       container.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR);
 
     for (let i = 0, l = candidates.length; i < l; i++) {
-      const candidate = candidates[i] as HTMLElement;
+      const candidate = candidates[i];
 
-      if (isFocusable(candidate)) {
+      if (candidate && isFocusable(candidate)) {
         elements[elements.length] = candidate;
       }
     }
@@ -192,7 +200,11 @@ function getRelativeFocusable(
     return null;
   }
 
-  const currentIndex = focusables.indexOf(active as HTMLElement);
+  if (!(active instanceof HTMLElement)) {
+    throw new Error('Unreachable');
+  }
+
+  const currentIndex = focusables.indexOf(active);
 
   if (currentIndex === -1) {
     return null;
@@ -329,9 +341,9 @@ function normalizeRadioGroup(elements: HTMLElement[]) {
   let map: Map<string, HTMLInputElement[]> | null = null;
 
   for (let i = 0, l = elements.length; i < l; i++) {
-    const element = elements[i] as HTMLInputElement;
+    const element = elements[i];
 
-    if (!isUngroupedRadio(element)) {
+    if (!(element instanceof HTMLInputElement) || !isUngroupedRadio(element)) {
       continue;
     }
 
@@ -340,9 +352,11 @@ function normalizeRadioGroup(elements: HTMLElement[]) {
     }
 
     const key = `${element.form?.id ?? 'no-form'}::${element.name}`;
-    const group = (map.get(key) ??
-      map.set(key, []).get(key)) as HTMLInputElement[];
-    group[group.length] = element;
+    const group = map.get(key) ?? map.set(key, []).get(key);
+
+    if (group) {
+      group[group.length] = element;
+    }
   }
 
   if (!map) {
@@ -376,7 +390,12 @@ function sortByTabIndex(elements: HTMLElement[]) {
   const natural: HTMLElement[] = [];
 
   for (let i = 0, l = elements.length; i < l; i++) {
-    const element = elements[i] as HTMLElement;
+    const element = elements[i];
+
+    if (!element) {
+      throw new Error('Unreachable');
+    }
+
     const target = getTabIndex(element) > 0 ? ordered : natural;
     target[target.length] = element;
   }
