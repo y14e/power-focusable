@@ -19,12 +19,12 @@ function getFocusables(container = document.body, options = {}) {
         }
       }
       if (node instanceof HTMLSlotElement) {
-        const assigned = node.assignedElements({ flatten: true });
-        if (assigned.length) {
-          for (let i = 0, l = assigned.length; i < l; i++) {
-            const a = assigned[i];
-            if (a) {
-              traverse2(a);
+        const assigneds = node.assignedElements({ flatten: true });
+        if (assigneds.length) {
+          for (let i = 0, l = assigneds.length; i < l; i++) {
+            const assigned = assigneds[i];
+            if (assigned) {
+              traverse2(assigned);
             }
           }
           return;
@@ -112,9 +112,6 @@ function getRelativeFocusable(container, offset, options) {
   if (!active || !containsDeep(container, active)) {
     return null;
   }
-  if (!(active instanceof HTMLElement)) {
-    throw new Error("Unreachable");
-  }
   const currentIndex = focusables.indexOf(active);
   if (currentIndex === -1) {
     return null;
@@ -195,7 +192,7 @@ function normalizeRadioGroup(elements) {
   let map = null;
   for (let i = 0, l = elements.length; i < l; i++) {
     const element = elements[i];
-    if (!(element instanceof HTMLInputElement) || !isUngroupedRadio(element)) {
+    if (!isUngroupedRadio(element)) {
       continue;
     }
     if (!map) {
@@ -226,9 +223,6 @@ function sortByTabIndex(elements) {
   const natural = [];
   for (let i = 0, l = elements.length; i < l; i++) {
     const element = elements[i];
-    if (!element) {
-      throw new Error("Unreachable");
-    }
     const target = getTabIndex(element) > 0 ? ordered : natural;
     target[target.length] = element;
   }
@@ -248,7 +242,7 @@ function sortByTabIndex(elements) {
  * High-precision focus management utility with shadow DOM support.
  * Handles complex focus rules including tabindex ordering, radio groups, etc.
  *
- * @version 2.1.7
+ * @version 2.1.8
  * @author Yusuke Kamiyamane
  * @license MIT
  * @copyright Copyright (c) Yusuke Kamiyamane
