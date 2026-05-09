@@ -3,7 +3,7 @@
  * High-precision focus management utility with shadow DOM support.
  * Handles complex focus rules including tabindex ordering, radio groups, etc.
  *
- * @version 2.1.10
+ * @version 2.1.11
  * @author Yusuke Kamiyamane
  * @license MIT
  * @copyright Copyright (c) Yusuke Kamiyamane
@@ -134,7 +134,7 @@ export function isFocusable(element: HTMLElement) {
   }
 
   // Fast path [hidden], [inert]
-  if (element.hasAttribute('hidden') || element.hasAttribute('inert')) {
+  if (element.hidden || element.inert) {
     return false;
   }
 

@@ -70,7 +70,7 @@ function isFocusable(element) {
     console.warn("Invalid element");
     return false;
   }
-  if (element.hasAttribute("hidden") || element.hasAttribute("inert")) {
+  if (element.hidden || element.inert) {
     return false;
   }
   if (element.tabIndex < 0) {
@@ -225,7 +225,7 @@ function sortByTabIndex(elements) {
  * High-precision focus management utility with shadow DOM support.
  * Handles complex focus rules including tabindex ordering, radio groups, etc.
  *
- * @version 2.1.10
+ * @version 2.1.11
  * @author Yusuke Kamiyamane
  * @license MIT
  * @copyright Copyright (c) Yusuke Kamiyamane
