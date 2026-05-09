@@ -3,7 +3,7 @@
  * High-precision focus management utility with shadow DOM support.
  * Handles complex focus rules including tabindex ordering, radio groups, etc.
  *
- * @version 2.1.9
+ * @version 2.1.10
  * @author Yusuke Kamiyamane
  * @license MIT
  * @copyright Copyright (c) Yusuke Kamiyamane
@@ -77,8 +77,7 @@ export function getFocusables(
 
     traverse(container);
   } else {
-    const candidates =
-      container.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR);
+    const candidates = container.querySelectorAll(FOCUSABLE_SELECTOR);
 
     for (let i = 0, l = candidates.length; i < l; i++) {
       const candidate = candidates[i] as HTMLElement;
@@ -140,9 +139,7 @@ export function isFocusable(element: HTMLElement) {
   }
 
   // Fast path [tabindex="-1"]
-  const index = element.getAttribute('tabindex');
-
-  if (index && Number(index) < 0) {
+  if (element.tabIndex < 0) {
     return false;
   }
 
@@ -238,20 +235,6 @@ function getActiveElement() {
   }
 
   return current;
-}
-
-const tabIndexCache = new WeakMap<HTMLElement, number>();
-
-function getTabIndex(element: HTMLElement) {
-  const cached = tabIndexCache.get(element);
-
-  if (cached !== undefined) {
-    return cached;
-  }
-
-  const index = Number(element.getAttribute('tabindex'));
-  tabIndexCache.set(element, index);
-  return index;
 }
 
 function isDisabled(element: Element) {
@@ -379,11 +362,11 @@ function sortByTabIndex(elements: HTMLElement[]) {
 
   for (let i = 0, l = elements.length; i < l; i++) {
     const element = elements[i] as HTMLElement;
-    const target = getTabIndex(element) > 0 ? ordered : natural;
+    const target = element.tabIndex > 0 ? ordered : natural;
     target[target.length] = element;
   }
 
-  ordered.sort((a, b) => getTabIndex(a) - getTabIndex(b));
+  ordered.sort((a, b) => a.tabIndex - b.tabIndex);
   let count = 0;
   const sorted = new Array(ordered.length + natural.length);
 
