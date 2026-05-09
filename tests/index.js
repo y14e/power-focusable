@@ -22,20 +22,14 @@ function getFocusables(container = document.body, options = {}) {
         const assigneds = node.assignedElements({ flatten: true });
         if (assigneds.length) {
           for (let i = 0, l = assigneds.length; i < l; i++) {
-            const assigned = assigneds[i];
-            if (assigned) {
-              traverse2(assigned);
-            }
+            traverse2(assigneds[i]);
           }
           return;
         }
       }
       const children = node.childNodes;
       for (let i = 0, l = children.length; i < l; i++) {
-        const child = children[i];
-        if (child) {
-          traverse2(child);
-        }
+        traverse2(children[i]);
       }
     };
     traverse2(container);
@@ -43,7 +37,7 @@ function getFocusables(container = document.body, options = {}) {
     const candidates = container.querySelectorAll(FOCUSABLE_SELECTOR);
     for (let i = 0, l = candidates.length; i < l; i++) {
       const candidate = candidates[i];
-      if (candidate && isFocusable(candidate)) {
+      if (isFocusable(candidate)) {
         elements[elements.length] = candidate;
       }
     }
@@ -242,7 +236,7 @@ function sortByTabIndex(elements) {
  * High-precision focus management utility with shadow DOM support.
  * Handles complex focus rules including tabindex ordering, radio groups, etc.
  *
- * @version 2.1.8
+ * @version 2.1.9
  * @author Yusuke Kamiyamane
  * @license MIT
  * @copyright Copyright (c) Yusuke Kamiyamane
