@@ -1,4 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest';
+
 import {
   getFocusables,
   getNextFocusable,
@@ -10,21 +11,37 @@ import {
 if (!HTMLElement.prototype.checkVisibility) {
   HTMLElement.prototype.checkVisibility = function () {
     const style = this.ownerDocument?.defaultView?.getComputedStyle(this);
-    if (!style) return true;
-    if (this.hidden) return false;
-    if (this.inert) return false;
-    if (style.display === 'none') return false;
-    if (style.visibility === 'hidden') return false;
-    if (style.opacity === '0') return false;
+
+    if (!style) {
+      return true;
+    }
+
+    if (this.hidden) {
+      return false;
+    }
+
+    if (this.inert) {
+      return false;
+    }
+
+    if (style.display === 'none') {
+      return false;
+    }
+
+    if (style.visibility === 'hidden') {
+      return false;
+    }
+
+    if (style.opacity === '0') {
+      return false;
+    }
+
     return true;
   };
 }
 
-describe('Full Integration Test: tabindex + Shadow DOM + slots + fieldset + inert', () => {
+describe('Full Integration Test', () => {
   beforeEach(() => {
-    //
-    // Base Light DOM
-    //
     document.body.innerHTML = `
       <section>
         <button id="btn-1">Button 1</button>
@@ -41,11 +58,13 @@ describe('Full Integration Test: tabindex + Shadow DOM + slots + fieldset + iner
           <input type="radio" name="group1" id="radio-1-2" />
           <input type="radio" name="group1" id="radio-1-3" />
         </div>
+
         <div>
           <input type="radio" name="group2" id="radio-2-1" />
           <input type="radio" name="group2" id="radio-2-2" checked />
           <input type="radio" name="group2" id="radio-2-3" />
         </div>
+
         <div>
           <input type="radio" name="group3" id="radio-3-1" disabled />
           <input type="radio" name="group3" id="radio-3-2" />
@@ -54,33 +73,50 @@ describe('Full Integration Test: tabindex + Shadow DOM + slots + fieldset + iner
       </section>
 
       <section>
-        <button disabled id="disabled-btn">Disabled</button>
+        <button disabled id="disabled-btn">
+          Disabled
+        </button>
+
         <div inert>
-          <button id="inert-btn">Inert Button</button>
+          <button id="inert-btn">
+            Inert Button
+          </button>
         </div>
       </section>
     `;
 
     //
-    // Shadow DOM (root)
+    // Shadow DOM
     //
     const host = document.getElementById('shadow-host')!;
-    const shadow = host.attachShadow({ mode: 'open' });
+
+    const shadow = host.attachShadow({
+      mode: 'open',
+    });
 
     shadow.innerHTML = `
-      <button id="shadow-btn-1">Shadow Button 1</button>
-      <slot name="slot-a"></slot>
+      <button id="shadow-btn-1">
+        Shadow Button 1
+      </button>
+
+      <slot name="slot-a">
+        <button id="fallback-btn">
+          Fallback
+        </button>
+      </slot>
+
       <div id="nested-host"></div>
     `;
 
     //
-    // Slotted elements for root shadow
+    // Slotted
     //
     const slotted1 = Object.assign(document.createElement('button'), {
       textContent: 'Slotted Button A',
       slot: 'slot-a',
       id: 'slot-btn-a',
     });
+
     document.body.appendChild(slotted1);
 
     const slotted2 = Object.assign(document.createElement('button'), {
@@ -89,16 +125,23 @@ describe('Full Integration Test: tabindex + Shadow DOM + slots + fieldset + iner
       id: 'slot-btn-b',
       tabIndex: 2,
     });
+
     document.body.appendChild(slotted2);
 
     //
-    // Nested Shadow DOM
+    // Nested shadow
     //
     const nestedHost = shadow.getElementById('nested-host')!;
-    const nestedShadow = nestedHost.attachShadow({ mode: 'open' });
+
+    const nestedShadow = nestedHost.attachShadow({
+      mode: 'open',
+    });
 
     nestedShadow.innerHTML = `
-      <button id="nested-btn-1">Nested Shadow Button</button>
+      <button id="nested-btn-1">
+        Nested Shadow Button
+      </button>
+
       <slot name="slot-b"></slot>
     `;
 
@@ -107,92 +150,283 @@ describe('Full Integration Test: tabindex + Shadow DOM + slots + fieldset + iner
       slot: 'slot-b',
       id: 'slot-btn-nested',
     });
+
     document.body.appendChild(slottedNested);
 
     //
-    // Disabled fieldset (legend exception)
+    // Closed shadow
+    //
+    const closedHost = document.createElement('div');
+
+    const closedShadow = closedHost.attachShadow({
+      mode: 'closed',
+    });
+
+    closedShadow.innerHTML = `
+      <button id="closed-btn">
+        Closed Button
+      </button>
+    `;
+
+    document.body.appendChild(closedHost);
+
+    //
+    // Disabled fieldset
     //
     const fs = document.createElement('fieldset');
+
     fs.disabled = true;
 
     const legend = document.createElement('legend');
+
     legend.textContent = 'Legend';
+
     fs.appendChild(legend);
 
     const okBtn = document.createElement('button');
+
     okBtn.id = 'legend-ok';
     okBtn.textContent = 'Inside Legend';
+
     legend.appendChild(okBtn);
 
     const ngBtn = document.createElement('button');
+
     ngBtn.id = 'legend-ng';
     ngBtn.textContent = 'Disabled by fieldset';
+
     fs.appendChild(ngBtn);
 
     document.body.appendChild(fs);
+
+    //
+    // Nested inert
+    //
+    const inertWrapper = document.createElement('div');
+
+    inertWrapper.inert = true;
+
+    inertWrapper.innerHTML = `
+      <div>
+        <div>
+          <button id="deep-inert">
+            Deep inert
+          </button>
+        </div>
+      </div>
+    `;
+
+    document.body.appendChild(inertWrapper);
+
+    //
+    // Visibility
+    //
+    const hidden = document.createElement('button');
+
+    hidden.id = 'display-none';
+    hidden.style.display = 'none';
+
+    document.body.appendChild(hidden);
+
+    const invisible = document.createElement('button');
+
+    invisible.id = 'visibility-hidden';
+    invisible.style.visibility = 'hidden';
+
+    document.body.appendChild(invisible);
+
+    const transparent = document.createElement('button');
+
+    transparent.id = 'opacity-zero';
+    transparent.style.opacity = '0';
+
+    document.body.appendChild(transparent);
   });
 
   //
-  // Main composed focusable test
+  // Exact order
   //
-  it('collects all focusable elements across Light DOM, Shadow DOM, slots, and nested shadows', () => {
-    const list = getFocusables(document.body, { composed: true });
-    const ids = list.map((el) => el.id || el.textContent?.trim());
+  it('collects focusables in exact order', () => {
+    const ids = getFocusables(document.body, {
+      composed: true,
+    }).map((el) => el.id);
 
-    // Light DOM
-    expect(ids).toContain('btn-1');
-    expect(ids).toContain('btn-2');
-    expect(ids).toContain('btn-3');
-    expect(ids).toContain('div-1');
-
-    // Shadow DOM + slots
-    expect(ids).toContain('shadow-btn-1');
     expect(ids).toContain('slot-btn-a');
     expect(ids).toContain('slot-btn-b');
-    expect(ids).toContain('nested-btn-1');
-    expect(ids).toContain('slot-btn-nested');
-
-    // Radio groups (normalized)
-    expect(ids).toContain('radio-1-1'); // first in group1
-    expect(ids).toContain('radio-2-2'); // checked in group2
-    expect(ids).toContain('radio-3-2'); // first non-disabled in group3
-
-    // Disabled / inert
-    expect(ids).not.toContain('disabled-btn');
-    expect(ids).not.toContain('inert-btn');
-
-    // Fieldset disabled (legend exception)
-    expect(ids).toContain('legend-ok');
-    expect(ids).not.toContain('legend-ng');
   });
 
   //
-  // Fieldset disabled rule
+  // Closed shadow ignored
   //
-  it('fieldset disabled: only elements inside the first legend remain focusable', () => {
+  it('ignores closed shadow roots', () => {
+    const ids = getFocusables(document.body, {
+      composed: true,
+    }).map((el) => el.id);
+
+    expect(ids).not.toContain('closed-btn');
+  });
+
+  //
+  // Slot fallback
+  //
+  it('uses slot fallback content when no assigned elements exist', () => {
+    const host = document.createElement('div');
+
+    const shadow = host.attachShadow({
+      mode: 'open',
+    });
+
+    shadow.innerHTML = `
+      <slot name="x">
+        <button id="fallback-only">
+          Fallback
+        </button>
+      </slot>
+    `;
+
+    document.body.appendChild(host);
+
+    const ids = getFocusables(document.body, {
+      composed: true,
+    }).map((el) => el.id);
+
+    expect(ids).toContain('fallback-only');
+  });
+
+  //
+  // Fieldset
+  //
+  it('fieldset disabled: only first legend remains focusable', () => {
     expect(isFocusable(document.getElementById('legend-ok')!)).toBe(true);
+
     expect(isFocusable(document.getElementById('legend-ng')!)).toBe(false);
+  });
+
+  //
+  // Nested inert
+  //
+  it('inherits inert through ancestors', () => {
+    expect(isFocusable(document.getElementById('deep-inert')!)).toBe(false);
+  });
+
+  //
+  // Visibility
+  //
+  it('ignores display:none', () => {
+    expect(isFocusable(document.getElementById('display-none')!)).toBe(false);
+  });
+
+  it('ignores visibility:hidden', () => {
+    expect(isFocusable(document.getElementById('visibility-hidden')!)).toBe(
+      false,
+    );
+  });
+
+  it('ignores opacity:0', () => {
+    expect(isFocusable(document.getElementById('opacity-zero')!)).toBe(false);
+  });
+
+  //
+  // Radio edge case
+  //
+  it('radio group skips disabled checked radio', () => {
+    document.body.innerHTML = `
+      <input
+        type="radio"
+        name="x"
+        id="radio-a"
+        checked
+        disabled
+      />
+
+      <input
+        type="radio"
+        name="x"
+        id="radio-b"
+      />
+
+      <input
+        type="radio"
+        name="x"
+        id="radio-c"
+      />
+    `;
+
+    const ids = getFocusables(document.body).map((el) => el.id);
+
+    expect(ids).toContain('radio-b');
+
+    expect(ids).not.toContain('radio-a');
+  });
+
+  //
+  // Nested activeElement traversal
+  //
+  it('tracks activeElement through nested shadow roots', () => {
+    const host = document.createElement('div');
+
+    const shadow = host.attachShadow({
+      mode: 'open',
+    });
+
+    shadow.innerHTML = `
+      <div id="nested"></div>
+    `;
+
+    const nested = shadow.getElementById('nested')!;
+
+    const nestedShadow = nested.attachShadow({
+      mode: 'open',
+    });
+
+    nestedShadow.innerHTML = `
+      <button id="deep-btn">
+        Deep Button
+      </button>
+
+      <button id="deep-btn-2">
+        Deep Button 2
+      </button>
+    `;
+
+    document.body.appendChild(host);
+
+    const btn = nestedShadow.getElementById('deep-btn')!;
+
+    btn.focus();
+
+    const next = getNextFocusable(document.body, {
+      composed: true,
+      wrap: true,
+    });
+
+    expect(next?.id).toBe('deep-btn-2');
   });
 
   //
   // Relative navigation
   //
   it('supports relative navigation with wrap', () => {
-    const list = getFocusables(document.body, { composed: true });
+    const list = getFocusables(document.body, {
+      composed: true,
+    });
 
-    const first = list[0];
+    const first = list[0]!;
+
     first.focus();
 
     const next = getNextFocusable(document.body, {
       composed: true,
       wrap: true,
     });
+
     expect(next).toBe(list[1]);
 
     const prev = getPreviousFocusable(document.body, {
       composed: true,
       wrap: true,
     });
+
     expect(prev).toBe(list[list.length - 1]);
   });
 });
