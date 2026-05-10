@@ -3,7 +3,7 @@
  * High-precision focus management utility with shadow DOM support.
  * Handles complex focus rules including tabindex ordering, radio groups, etc.
  *
- * @version 2.1.11
+ * @version 2.1.12
  * @author Yusuke Kamiyamane
  * @license MIT
  * @copyright Copyright (c) Yusuke Kamiyamane
@@ -61,7 +61,13 @@ export function getFocusables(
 
         if (assigneds.length) {
           for (let i = 0, l = assigneds.length; i < l; i++) {
-            traverse(assigneds[i] as Element);
+            const assigned = assigneds[i];
+
+            if (!assigned) {
+              continue;
+            }
+
+            traverse(assigned);
           }
 
           return;
@@ -71,7 +77,13 @@ export function getFocusables(
       const children = node.childNodes;
 
       for (let i = 0, l = children.length; i < l; i++) {
-        traverse(children[i] as ChildNode);
+        const child = children[i];
+
+        if (!child) {
+          continue;
+        }
+
+        traverse(child);
       }
     }
 
@@ -80,7 +92,11 @@ export function getFocusables(
     const candidates = container.querySelectorAll(FOCUSABLE_SELECTOR);
 
     for (let i = 0, l = candidates.length; i < l; i++) {
-      const candidate = candidates[i] as HTMLElement;
+      const candidate = candidates[i];
+
+      if (!(candidate instanceof HTMLElement)) {
+        continue;
+      }
 
       if (isFocusable(candidate)) {
         elements[elements.length] = candidate;
@@ -189,7 +205,11 @@ function getRelativeFocusable(
     return null;
   }
 
-  const currentIndex = focusables.indexOf(active as HTMLElement);
+  if (!(active instanceof HTMLElement)) {
+    return null;
+  }
+
+  const currentIndex = focusables.indexOf(active);
 
   if (currentIndex === -1) {
     return null;
@@ -312,7 +332,11 @@ function normalizeRadioGroup(elements: HTMLElement[]) {
   let map: Map<string, HTMLInputElement[]> | null = null;
 
   for (let i = 0, l = elements.length; i < l; i++) {
-    const element = elements[i] as HTMLInputElement;
+    const element = elements[i];
+
+    if (!(element instanceof HTMLInputElement)) {
+      continue;
+    }
 
     if (!isUngroupedRadio(element)) {
       continue;
@@ -361,7 +385,12 @@ function sortByTabIndex(elements: HTMLElement[]) {
   const natural: HTMLElement[] = [];
 
   for (let i = 0, l = elements.length; i < l; i++) {
-    const element = elements[i] as HTMLElement;
+    const element = elements[i];
+
+    if (!element) {
+      continue;
+    }
+
     const target = element.tabIndex > 0 ? ordered : natural;
     target[target.length] = element;
   }

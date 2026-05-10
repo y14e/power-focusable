@@ -22,14 +22,22 @@ function getFocusables(container = document.body, options = {}) {
         const assigneds = node.assignedElements({ flatten: true });
         if (assigneds.length) {
           for (let i = 0, l = assigneds.length; i < l; i++) {
-            traverse2(assigneds[i]);
+            const assigned = assigneds[i];
+            if (!assigned) {
+              continue;
+            }
+            traverse2(assigned);
           }
           return;
         }
       }
       const children = node.childNodes;
       for (let i = 0, l = children.length; i < l; i++) {
-        traverse2(children[i]);
+        const child = children[i];
+        if (!child) {
+          continue;
+        }
+        traverse2(child);
       }
     };
     traverse2(container);
@@ -37,6 +45,9 @@ function getFocusables(container = document.body, options = {}) {
     const candidates = container.querySelectorAll(FOCUSABLE_SELECTOR);
     for (let i = 0, l = candidates.length; i < l; i++) {
       const candidate = candidates[i];
+      if (!(candidate instanceof HTMLElement)) {
+        continue;
+      }
       if (isFocusable(candidate)) {
         elements[elements.length] = candidate;
       }
@@ -103,6 +114,9 @@ function getRelativeFocusable(container, offset, options) {
     return null;
   }
   if (!active || !containsDeep(container, active)) {
+    return null;
+  }
+  if (!(active instanceof HTMLElement)) {
     return null;
   }
   const currentIndex = focusables.indexOf(active);
@@ -175,6 +189,9 @@ function normalizeRadioGroup(elements) {
   let map = null;
   for (let i = 0, l = elements.length; i < l; i++) {
     const element = elements[i];
+    if (!(element instanceof HTMLInputElement)) {
+      continue;
+    }
     if (!isUngroupedRadio(element)) {
       continue;
     }
@@ -206,6 +223,9 @@ function sortByTabIndex(elements) {
   const natural = [];
   for (let i = 0, l = elements.length; i < l; i++) {
     const element = elements[i];
+    if (!element) {
+      continue;
+    }
     const target = element.tabIndex > 0 ? ordered : natural;
     target[target.length] = element;
   }
@@ -225,7 +245,7 @@ function sortByTabIndex(elements) {
  * High-precision focus management utility with shadow DOM support.
  * Handles complex focus rules including tabindex ordering, radio groups, etc.
  *
- * @version 2.1.11
+ * @version 2.1.12
  * @author Yusuke Kamiyamane
  * @license MIT
  * @copyright Copyright (c) Yusuke Kamiyamane
