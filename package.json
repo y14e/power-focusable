@@ -20,6 +20,7 @@
   ],
   "scripts": {
     "build": "tsup",
+    "test": "vitest run",
     "prepublishOnly": "npm run build",
     "lint": "tsc --noEmit"
   },
@@ -46,8 +47,10 @@
   "homepage": "https://github.com/y14e/power-focusable#readme",
   "devDependencies": {
     "bun-types": "latest",
+    "happy-dom": "^20.9.0",
     "tsup": "^8.0.0",
-    "typescript": "^5.6.0"
+    "typescript": "^5.6.0",
+    "vitest": "^4.1.5"
   },
   "engines": {
     "node": ">=18"
