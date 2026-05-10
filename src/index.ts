@@ -43,7 +43,7 @@ export function getFocusables(
   const elements: HTMLElement[] = [];
 
   if (composed) {
-    function traverse(node: Element | Node | ShadowRoot) {
+    function traverse(node: Node) {
       if (node instanceof HTMLElement) {
         if (isFocusable(node)) {
           elements[elements.length] = node;
