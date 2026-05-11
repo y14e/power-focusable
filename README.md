@@ -33,7 +33,7 @@ import { ... } 'https://unpkg.com/power-focusable/dist/index.js';
 
 ```ts
 interface PowerFocusableOptions {
-  active?: HTMLElement | null; // default: document.activeElement
+  active?: Element | null; // default: document.activeElement
   composed?: boolean;          // default: false
   wrap?: boolean;              // default: false
 }
@@ -65,9 +65,9 @@ Returns all focusable elements within the container.
 
 ```ts
 getFocusables(container);
-// => HTMLElement[]
+// => Element[]
 //
-// container (optional): HTMLElement (default: <body>)
+// container (optional): Element (default: <body>)
 
 // Traverses the composed tree (including shadow DOM; slower)
 getFocusables(container, { composed: true });
@@ -79,9 +79,9 @@ Returns the next focusable element within the container, starting from `document
 
 ```ts
 getNextFocusable(container);
-// => HTMLElement | null
+// => Element | null
 //
-// container (optional): HTMLElement (default: <body>)
+// container (optional): Element (default: <body>)
 
 // Specifies the starting element
 getNextFocusable(container, { active: document.querySelector('.button') });
@@ -99,9 +99,9 @@ Returns the previous focusable element within the container, starting from `docu
 
 ```ts
 getPreviousFocusable(container);
-// => HTMLElement | null
+// => Element | null
 //
-// container (optional): HTMLElement (default: <body>)
+// container (optional): Element (default: <body>)
 
 // Specifies the starting element
 getPreviousFocusable(container, { active: document.querySelector('.button') });
@@ -122,7 +122,7 @@ Returns whether the container contains at least one focusable element.
 hasFocusable(container);
 // => boolean
 //
-// container (optional): HTMLElement (default: <body>)
+// container (optional): Element (default: <body>)
 
 // Traverses the composed tree (including shadow DOM; slower)
 hasFocusable(container, { composed: true });
@@ -136,6 +136,6 @@ Returns whether the given element is focusable.
 isFocusable(element);
 // => boolean
 //
-// element: HTMLElement
+// element: Element
 
 ```
