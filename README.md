@@ -34,8 +34,8 @@ import { ... } 'https://unpkg.com/power-focusable/dist/index.js';
 ```ts
 interface PowerFocusableOptions {
   active?: Element | null; // default: document.activeElement
-  composed?: boolean;          // default: false
-  wrap?: boolean;              // default: false
+  composed?: boolean;      // default: false
+  wrap?: boolean;          // default: false
 }
 ```
 
