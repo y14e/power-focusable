@@ -1,6 +1,6 @@
 {
   "name": "power-focusable",
-  "version": "2.1.12",
+  "version": "2.1.13",
   "description": "High-precision focus management utility with shadow DOM support",
   "type": "module",
   "main": "./dist/index.cjs",

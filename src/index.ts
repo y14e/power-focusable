@@ -3,7 +3,7 @@
  * High-precision focus management utility with shadow DOM support.
  * Handles complex focus rules including tabindex ordering, radio groups, etc.
  *
- * @version 2.1.12
+ * @version 2.1.13
  * @author Yusuke Kamiyamane
  * @license MIT
  * @copyright Copyright (c) Yusuke Kamiyamane
@@ -74,7 +74,11 @@ export function getFocusables(
         }
       }
 
-      const children = node.childNodes;
+      if (!(node instanceof Element || node instanceof ShadowRoot)) {
+        return;
+      }
+
+      const children = node.children;
 
       for (let i = 0, l = children.length; i < l; i++) {
         const child = children[i];
