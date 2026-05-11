@@ -3,7 +3,7 @@
  * High-precision focus management utility with shadow DOM support.
  * Handles complex focus rules including tabindex ordering, radio groups, etc.
  *
- * @version 2.1.13
+ * @version 2.2.0
  * @author Yusuke Kamiyamane
  * @license MIT
  * @copyright Copyright (c) Yusuke Kamiyamane
@@ -15,7 +15,7 @@
 // -----------------------------------------------------------------------------
 
 export interface PowerFocusableOptions {
-  readonly active?: HTMLElement | null;
+  readonly active?: Element | null;
   readonly composed?: boolean;
   readonly wrap?: boolean;
 }
@@ -31,54 +31,26 @@ const FOCUSABLE_SELECTOR = `:is(a[href], area[href], button, embed, iframe, inpu
 // -----------------------------------------------------------------------------
 
 export function getFocusables(
-  container = document.body,
+  container: Element = document.body,
   options: Omit<PowerFocusableOptions, 'active' | 'wrap'> = {},
 ) {
-  if (!(container instanceof HTMLElement)) {
+  if (!(container instanceof Element)) {
     console.warn('Invalid container element. Fallback: <body> element.');
     container = document.body;
   }
 
   const { composed = false } = options;
-  const elements: HTMLElement[] = [];
+  const elements: Element[] = [];
 
   if (composed) {
     function traverse(node: Node) {
-      if (node instanceof HTMLElement) {
+      if (node instanceof Element) {
         if (isFocusable(node)) {
           elements[elements.length] = node;
         }
-
-        const shadow = node.shadowRoot;
-
-        if (shadow && shadow.mode === 'open') {
-          traverse(shadow);
-        }
       }
 
-      if (node instanceof HTMLSlotElement) {
-        const assigneds = node.assignedElements({ flatten: true });
-
-        if (assigneds.length) {
-          for (let i = 0, l = assigneds.length; i < l; i++) {
-            const assigned = assigneds[i];
-
-            if (!assigned) {
-              continue;
-            }
-
-            traverse(assigned);
-          }
-
-          return;
-        }
-      }
-
-      if (!(node instanceof Element || node instanceof ShadowRoot)) {
-        return;
-      }
-
-      const children = node.children;
+      const children = getComposedChildren(node);
 
       for (let i = 0, l = children.length; i < l; i++) {
         const child = children[i];
@@ -98,7 +70,7 @@ export function getFocusables(
     for (let i = 0, l = candidates.length; i < l; i++) {
       const candidate = candidates[i];
 
-      if (!(candidate instanceof HTMLElement)) {
+      if (!(candidate instanceof Element)) {
         continue;
       }
 
@@ -112,10 +84,10 @@ export function getFocusables(
 }
 
 export function getNextFocusable(
-  container = document.body,
+  container: Element = document.body,
   options: PowerFocusableOptions = {},
 ) {
-  if (!(container instanceof HTMLElement)) {
+  if (!(container instanceof Element)) {
     console.warn('Invalid container element. Fallback: <body> element.');
     container = document.body;
   }
@@ -124,10 +96,10 @@ export function getNextFocusable(
 }
 
 export function getPreviousFocusable(
-  container = document.body,
+  container: Element = document.body,
   options: PowerFocusableOptions = {},
 ) {
-  if (!(container instanceof HTMLElement)) {
+  if (!(container instanceof Element)) {
     console.warn('Invalid container element. Fallback: <body> element.');
     container = document.body;
   }
@@ -136,10 +108,10 @@ export function getPreviousFocusable(
 }
 
 export function hasFocusable(
-  container = document.body,
+  container: Element = document.body,
   options: Omit<PowerFocusableOptions, 'active' | 'wrap'> = {},
 ) {
-  if (!(container instanceof HTMLElement)) {
+  if (!(container instanceof Element)) {
     console.warn('Invalid container element. Fallback: <body> element.');
     container = document.body;
   }
@@ -147,19 +119,19 @@ export function hasFocusable(
   return !!getFocusables(container, options).length;
 }
 
-export function isFocusable(element: HTMLElement) {
-  if (!(element instanceof HTMLElement)) {
+export function isFocusable(element: Element) {
+  if (!(element instanceof Element)) {
     console.warn('Invalid element');
     return false;
   }
 
   // Fast path [hidden], [inert]
-  if (element.hidden || element.inert) {
+  if (element.hasAttribute('hidden') || element.hasAttribute('inert')) {
     return false;
   }
 
   // Fast path [tabindex="-1"]
-  if (element.tabIndex < 0) {
+  if (getTabIndex(element) < 0) {
     return false;
   }
 
@@ -188,8 +160,32 @@ export function isFocusable(element: HTMLElement) {
 // Core
 // -----------------------------------------------------------------------------
 
+function getComposedChildren(node: Node): Element[] {
+  if (node instanceof ShadowRoot) {
+    return getChildren(node);
+  }
+
+  if (!(node instanceof Element)) {
+    return [];
+  }
+
+  if (node instanceof HTMLSlotElement) {
+    const assigned = node.assignedElements({ flatten: true });
+
+    if (assigned.length) {
+      return assigned;
+    }
+  }
+
+  if (node instanceof HTMLElement && node.shadowRoot?.mode === 'open') {
+    return getChildren(node.shadowRoot);
+  }
+
+  return getChildren(node);
+}
+
 function getRelativeFocusable(
-  container: HTMLElement,
+  container: Element,
   offset: number,
   options: PowerFocusableOptions,
 ) {
@@ -209,7 +205,7 @@ function getRelativeFocusable(
     return null;
   }
 
-  if (!(active instanceof HTMLElement)) {
+  if (!(active instanceof Element)) {
     return null;
   }
 
@@ -226,6 +222,88 @@ function getRelativeFocusable(
   }
 
   return focusables[(offsetIndex + length) % length] ?? null;
+}
+
+function normalizeRadioGroup(elements: Element[]) {
+  let map: Map<string, HTMLInputElement[]> | null = null;
+
+  for (let i = 0, l = elements.length; i < l; i++) {
+    const element = elements[i];
+
+    if (!(element instanceof HTMLInputElement)) {
+      continue;
+    }
+
+    if (!isUngroupedRadio(element)) {
+      continue;
+    }
+
+    if (!map) {
+      map = new Map();
+    }
+
+    const key = `${element.form?.id ?? 'no-form'}::${element.name}`;
+    const group = map.get(key) ?? map.set(key, []).get(key);
+
+    if (group) {
+      group[group.length] = element;
+    }
+  }
+
+  if (!map) {
+    return elements;
+  }
+
+  const placeholder = new Set();
+
+  for (const group of map.values()) {
+    /* Safety
+    const radios = group.filter(isFocusable);
+
+    if (radios.length) {
+      placeholder.add(radios.find((radio) => radio.checked) ?? radios[0]);
+    }
+    */
+    placeholder.add(group.find((radio) => radio.checked) ?? group[0]);
+  }
+
+  return elements.filter((element) => {
+    if (isUngroupedRadio(element)) {
+      return placeholder.has(element);
+    }
+
+    return true;
+  });
+}
+
+function sortByTabIndex(elements: Element[]) {
+  const ordered: Element[] = [];
+  const natural: Element[] = [];
+
+  for (let i = 0, l = elements.length; i < l; i++) {
+    const element = elements[i];
+
+    if (!element) {
+      continue;
+    }
+
+    const target = getTabIndex(element) > 0 ? ordered : natural;
+    target[target.length] = element;
+  }
+
+  ordered.sort((a, b) => getTabIndex(a) - getTabIndex(b));
+  let count = 0;
+  const sorted = new Array(ordered.length + natural.length);
+
+  for (let i = 0, l = ordered.length; i < l; i++) {
+    sorted[count++] = ordered[i];
+  }
+
+  for (let i = 0, l = natural.length; i < l; i++) {
+    sorted[count++] = natural[i];
+  }
+
+  return sorted;
 }
 
 // -----------------------------------------------------------------------------
@@ -259,6 +337,24 @@ function getActiveElement() {
   }
 
   return current;
+}
+
+function getChildren(node: ParentNode) {
+  const elements: Element[] = [];
+
+  for (
+    let child = node.firstElementChild;
+    child;
+    child = child.nextElementSibling
+  ) {
+    elements[elements.length] = child;
+  }
+
+  return elements;
+}
+
+function getTabIndex(element: Element) {
+  return 'tabIndex' in element ? Number(element.tabIndex) : 0;
 }
 
 function isDisabled(element: Element) {
@@ -330,86 +426,4 @@ function isUngroupedRadio(element: Element) {
     element.type === 'radio' &&
     !!element.name
   );
-}
-
-function normalizeRadioGroup(elements: HTMLElement[]) {
-  let map: Map<string, HTMLInputElement[]> | null = null;
-
-  for (let i = 0, l = elements.length; i < l; i++) {
-    const element = elements[i];
-
-    if (!(element instanceof HTMLInputElement)) {
-      continue;
-    }
-
-    if (!isUngroupedRadio(element)) {
-      continue;
-    }
-
-    if (!map) {
-      map = new Map();
-    }
-
-    const key = `${element.form?.id ?? 'no-form'}::${element.name}`;
-    const group = map.get(key) ?? map.set(key, []).get(key);
-
-    if (group) {
-      group[group.length] = element;
-    }
-  }
-
-  if (!map) {
-    return elements;
-  }
-
-  const placeholder = new Set();
-
-  for (const group of map.values()) {
-    /* Safety
-    const radios = group.filter(isFocusable);
-
-    if (radios.length) {
-      placeholder.add(radios.find((radio) => radio.checked) ?? radios[0]);
-    }
-    */
-    placeholder.add(group.find((radio) => radio.checked) ?? group[0]);
-  }
-
-  return elements.filter((element) => {
-    if (isUngroupedRadio(element)) {
-      return placeholder.has(element);
-    }
-
-    return true;
-  });
-}
-
-function sortByTabIndex(elements: HTMLElement[]) {
-  const ordered: HTMLElement[] = [];
-  const natural: HTMLElement[] = [];
-
-  for (let i = 0, l = elements.length; i < l; i++) {
-    const element = elements[i];
-
-    if (!element) {
-      continue;
-    }
-
-    const target = element.tabIndex > 0 ? ordered : natural;
-    target[target.length] = element;
-  }
-
-  ordered.sort((a, b) => a.tabIndex - b.tabIndex);
-  let count = 0;
-  const sorted = new Array(ordered.length + natural.length);
-
-  for (let i = 0, l = ordered.length; i < l; i++) {
-    sorted[count++] = ordered[i];
-  }
-
-  for (let i = 0, l = natural.length; i < l; i++) {
-    sorted[count++] = natural[i];
-  }
-
-  return sorted;
 }
