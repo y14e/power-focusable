@@ -4,7 +4,7 @@
  * Handles complex focus rules including tabindex ordering, radio groups, inert,
  * and shadow DOM.
  *
- * @version 3.0.0
+ * @version 3.0.1
  * @author Yusuke Kamiyamane
  * @license MIT
  * @copyright Copyright (c) Yusuke Kamiyamane
@@ -102,7 +102,7 @@ export function getFocusables(
         }
       }
 
-      const children = getChildrenComposed(node);
+      const children = getComposedChildren(node);
 
       for (let i = 0, l = children.length; i < l; i++) {
         const child = children[i];
@@ -178,13 +178,13 @@ export function inertOutside(element: Element) {
   }
 
   function traverse(node: Element, callback: (_: Element) => void) {
-    const parent = getParentComposed(node);
+    const parent = getComposedParent(node);
 
     if (!parent) {
       return;
     }
 
-    for (const sibling of getSiblingsComposed(node)) {
+    for (const sibling of getComposedSiblings(node)) {
       callback(sibling);
     }
 
@@ -445,7 +445,7 @@ function containsComposed(container: Node, element: Node) {
   return false;
 }
 
-function getChildrenComposed(node: Node) {
+function getComposedChildren(node: Node) {
   if (node instanceof ShadowRoot) {
     return getChildren(node);
   }
@@ -469,7 +469,7 @@ function getChildrenComposed(node: Node) {
   return getChildren(node);
 }
 
-function getParentComposed(node: Node) {
+function getComposedParent(node: Node) {
   if (node instanceof Element && node.assignedSlot) {
     return node.assignedSlot;
   }
@@ -483,14 +483,14 @@ function getParentComposed(node: Node) {
   return parent instanceof Element ? parent : null;
 }
 
-function getSiblingsComposed(node: Element) {
+function getComposedSiblings(node: Element) {
   if (node.assignedSlot) {
     return [...node.assignedSlot.children].filter(
       (child): child is Element => child instanceof Element && child !== node,
     );
   }
 
-  const parent = getParentComposed(node);
+  const parent = getComposedParent(node);
 
   if (!parent) {
     return [];
@@ -571,7 +571,7 @@ function getChildren(node: ParentNode) {
 }
 
 function getSiblings(node: Element) {
-  const parent = getParentComposed(node);
+  const parent = getComposedParent(node);
 
   if (!parent) {
     return [];

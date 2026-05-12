@@ -53,7 +53,7 @@ function getFocusables(container = document.body, options = {}) {
           elements[elements.length] = node;
         }
       }
-      const children = getChildrenComposed(node);
+      const children = getComposedChildren(node);
       for (let i = 0, l = children.length; i < l; i++) {
         const child = children[i];
         if (!child) {
@@ -105,11 +105,11 @@ function inertOutside(element) {
     };
   }
   function traverse(node, callback) {
-    const parent = getParentComposed(node);
+    const parent = getComposedParent(node);
     if (!parent) {
       return;
     }
-    for (const sibling of getSiblingsComposed(node)) {
+    for (const sibling of getComposedSiblings(node)) {
       callback(sibling);
     }
     traverse(parent, callback);
@@ -155,34 +155,6 @@ function isFocusable(element) {
   }
   return true;
 }
-function getChildrenComposed(node) {
-  if (node instanceof ShadowRoot) {
-    return getChildren(node);
-  }
-  if (!(node instanceof Element)) {
-    return [];
-  }
-  if (node instanceof HTMLSlotElement) {
-    const assigned = node.assignedElements({ flatten: true });
-    if (assigned.length) {
-      return assigned;
-    }
-  }
-  if (node instanceof HTMLElement && node.shadowRoot?.mode === "open") {
-    return getChildren(node.shadowRoot);
-  }
-  return getChildren(node);
-}
-function getParentComposed(node) {
-  if (node instanceof Element && node.assignedSlot) {
-    return node.assignedSlot;
-  }
-  const parent = node.parentNode;
-  if (parent instanceof ShadowRoot) {
-    return parent.host;
-  }
-  return parent instanceof Element ? parent : null;
-}
 function getRelativeFocusable(container, offset, options) {
   const {
     active = getActiveElement(),
@@ -209,18 +181,6 @@ function getRelativeFocusable(container, offset, options) {
     return null;
   }
   return focusables[(offsetIndex + length) % length] ?? null;
-}
-function getSiblingsComposed(node) {
-  if (node.assignedSlot) {
-    return [...node.assignedSlot.children].filter(
-      (child) => child instanceof Element && child !== node
-    );
-  }
-  const parent = getParentComposed(node);
-  if (!parent) {
-    return [];
-  }
-  return getSiblings(node);
 }
 function isDisabledDeep(element) {
   let current = element;
@@ -306,6 +266,56 @@ function sortByTabIndex(elements) {
   }
   return sorted;
 }
+function containsComposed(container, element) {
+  let current = element;
+  while (current) {
+    if (current === container) {
+      return true;
+    }
+    current = current instanceof ShadowRoot ? current.mode === "open" ? current.host : null : current.parentNode;
+  }
+  return false;
+}
+function getComposedChildren(node) {
+  if (node instanceof ShadowRoot) {
+    return getChildren(node);
+  }
+  if (!(node instanceof Element)) {
+    return [];
+  }
+  if (node instanceof HTMLSlotElement) {
+    const assigned = node.assignedElements({ flatten: true });
+    if (assigned.length) {
+      return assigned;
+    }
+  }
+  if (node instanceof HTMLElement && node.shadowRoot?.mode === "open") {
+    return getChildren(node.shadowRoot);
+  }
+  return getChildren(node);
+}
+function getComposedParent(node) {
+  if (node instanceof Element && node.assignedSlot) {
+    return node.assignedSlot;
+  }
+  const parent = node.parentNode;
+  if (parent instanceof ShadowRoot) {
+    return parent.host;
+  }
+  return parent instanceof Element ? parent : null;
+}
+function getComposedSiblings(node) {
+  if (node.assignedSlot) {
+    return [...node.assignedSlot.children].filter(
+      (child) => child instanceof Element && child !== node
+    );
+  }
+  const parent = getComposedParent(node);
+  if (!parent) {
+    return [];
+  }
+  return getSiblings(node);
+}
 var inertRefCounts = /* @__PURE__ */ new WeakMap();
 function applyInert(element) {
   if (isInert(element) && !inertRefCounts.has(element)) {
@@ -330,16 +340,6 @@ function restoreInert(element) {
   }
   inertRefCounts.set(element, count - 1);
 }
-function containsComposed(container, element) {
-  let current = element;
-  while (current) {
-    if (current === container) {
-      return true;
-    }
-    current = current instanceof ShadowRoot ? current.mode === "open" ? current.host : null : current.parentNode;
-  }
-  return false;
-}
 function focus(element) {
   if ("focus" in element && typeof element.focus === "function") {
     element.focus();
@@ -360,7 +360,7 @@ function getChildren(node) {
   return elements;
 }
 function getSiblings(node) {
-  const parent = getParentComposed(node);
+  const parent = getComposedParent(node);
   if (!parent) {
     return [];
   }
@@ -401,7 +401,7 @@ function setInert(element, boolean) {
  * Handles complex focus rules including tabindex ordering, radio groups, inert,
  * and shadow DOM.
  *
- * @version 3.0.0
+ * @version 3.0.1
  * @author Yusuke Kamiyamane
  * @license MIT
  * @copyright Copyright (c) Yusuke Kamiyamane
