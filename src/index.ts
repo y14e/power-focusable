@@ -251,44 +251,6 @@ export function isFocusable(element: Element) {
 // Core
 // -----------------------------------------------------------------------------
 
-function getChildrenComposed(node: Node) {
-  if (node instanceof ShadowRoot) {
-    return getChildren(node);
-  }
-
-  if (!(node instanceof Element)) {
-    return [];
-  }
-
-  if (node instanceof HTMLSlotElement) {
-    const assigned = node.assignedElements({ flatten: true });
-
-    if (assigned.length) {
-      return assigned;
-    }
-  }
-
-  if (node instanceof HTMLElement && node.shadowRoot?.mode === 'open') {
-    return getChildren(node.shadowRoot);
-  }
-
-  return getChildren(node);
-}
-
-function getParentComposed(node: Node) {
-  if (node instanceof Element && node.assignedSlot) {
-    return node.assignedSlot;
-  }
-
-  const parent = node.parentNode;
-
-  if (parent instanceof ShadowRoot) {
-    return parent.host as Element;
-  }
-
-  return parent instanceof Element ? parent : null;
-}
-
 function getRelativeFocusable(
   container: Element,
   offset: number,
@@ -327,22 +289,6 @@ function getRelativeFocusable(
   }
 
   return focusables[(offsetIndex + length) % length] ?? null;
-}
-
-function getSiblingsComposed(node: Element) {
-  if (node.assignedSlot) {
-    return [...node.assignedSlot.children].filter(
-      (child): child is Element => child instanceof Element && child !== node,
-    );
-  }
-
-  const parent = getParentComposed(node);
-
-  if (!parent) {
-    return [];
-  }
-
-  return getSiblings(node);
 }
 
 function isDisabledDeep(element: Element) {
@@ -477,6 +423,83 @@ function sortByTabIndex(elements: Element[]) {
 }
 
 // -----------------------------------------------------------------------------
+// Composed
+// -----------------------------------------------------------------------------
+
+function containsComposed(container: Node, element: Node) {
+  let current: Node | null = element;
+
+  while (current) {
+    if (current === container) {
+      return true;
+    }
+
+    current =
+      current instanceof ShadowRoot
+        ? current.mode === 'open'
+          ? current.host
+          : null
+        : current.parentNode;
+  }
+
+  return false;
+}
+
+function getChildrenComposed(node: Node) {
+  if (node instanceof ShadowRoot) {
+    return getChildren(node);
+  }
+
+  if (!(node instanceof Element)) {
+    return [];
+  }
+
+  if (node instanceof HTMLSlotElement) {
+    const assigned = node.assignedElements({ flatten: true });
+
+    if (assigned.length) {
+      return assigned;
+    }
+  }
+
+  if (node instanceof HTMLElement && node.shadowRoot?.mode === 'open') {
+    return getChildren(node.shadowRoot);
+  }
+
+  return getChildren(node);
+}
+
+function getParentComposed(node: Node) {
+  if (node instanceof Element && node.assignedSlot) {
+    return node.assignedSlot;
+  }
+
+  const parent = node.parentNode;
+
+  if (parent instanceof ShadowRoot) {
+    return parent.host as Element;
+  }
+
+  return parent instanceof Element ? parent : null;
+}
+
+function getSiblingsComposed(node: Element) {
+  if (node.assignedSlot) {
+    return [...node.assignedSlot.children].filter(
+      (child): child is Element => child instanceof Element && child !== node,
+    );
+  }
+
+  const parent = getParentComposed(node);
+
+  if (!parent) {
+    return [];
+  }
+
+  return getSiblings(node);
+}
+
+// -----------------------------------------------------------------------------
 // State
 // -----------------------------------------------------------------------------
 
@@ -516,25 +539,6 @@ function restoreInert(element: Element) {
 // -----------------------------------------------------------------------------
 // Utils
 // -----------------------------------------------------------------------------
-
-function containsComposed(container: Node, element: Node) {
-  let current: Node | null = element;
-
-  while (current) {
-    if (current === container) {
-      return true;
-    }
-
-    current =
-      current instanceof ShadowRoot
-        ? current.mode === 'open'
-          ? current.host
-          : null
-        : current.parentNode;
-  }
-
-  return false;
-}
 
 function focus(element: Element) {
   if ('focus' in element && typeof element.focus === 'function') {
