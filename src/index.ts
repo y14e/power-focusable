@@ -1,9 +1,10 @@
 /**
  * Power Focusable
- * High-precision focus management utility with shadow DOM support.
- * Handles complex focus rules including tabindex ordering, radio groups, etc.
+ * High-precision focus management utility with full composed tree support.
+ * Handles complex focus rules including tabindex ordering, radio groups, inert,
+ * and shadow DOM.
  *
- * @version 2.2.1
+ * @version 3.0.0
  * @author Yusuke Kamiyamane
  * @license MIT
  * @copyright Copyright (c) Yusuke Kamiyamane
@@ -30,6 +31,57 @@ const FOCUSABLE_SELECTOR = `:is(a[href], area[href], button, embed, iframe, inpu
 // APIs
 // -----------------------------------------------------------------------------
 
+export function createFocusTrap(container: Element) {
+  if (!(container instanceof Element)) {
+    throw new Error('Invalid container element');
+  }
+
+  focus(container);
+
+  if (getActiveElement() !== container) {
+    const first = getFocusables(container, { composed: true })[0];
+
+    if (first) {
+      focus(first);
+    }
+  }
+
+  function onKeyDown(event: KeyboardEvent) {
+    const { key, altKey, ctrlKey, metaKey, shiftKey } = event;
+
+    if (key !== 'Tab' || altKey || ctrlKey || metaKey) {
+      return;
+    }
+
+    if (!event.composedPath().includes(container)) {
+      return;
+    }
+
+    const focusable = getRelativeFocusable(container, shiftKey ? -1 : 1, {
+      composed: true,
+      wrap: true,
+    });
+
+    if (!focusable) {
+      return;
+    }
+
+    event.preventDefault();
+    focus(focusable);
+  }
+
+  let controller: AbortController | null = new AbortController();
+  document.addEventListener('keydown', onKeyDown, {
+    capture: true,
+    signal: controller.signal,
+  });
+
+  return () => {
+    controller?.abort();
+    controller = null;
+  };
+}
+
 export function getFocusables(
   container: Element = document.body,
   options: Omit<PowerFocusableOptions, 'active' | 'wrap'> = {},
@@ -50,7 +102,7 @@ export function getFocusables(
         }
       }
 
-      const children = getComposedChildren(node);
+      const children = getChildrenComposed(node);
 
       for (let i = 0, l = children.length; i < l; i++) {
         const child = children[i];
@@ -119,6 +171,45 @@ export function hasFocusable(
   return !!getFocusables(container, options).length;
 }
 
+export function inertOutside(element: Element) {
+  if (!(element instanceof Element)) {
+    console.warn('Invalid element');
+    return () => {};
+  }
+
+  function traverse(node: Element, callback: (_: Element) => void) {
+    const parent = getParentComposed(node);
+
+    if (!parent) {
+      return;
+    }
+
+    for (const sibling of getSiblingsComposed(node)) {
+      callback(sibling);
+    }
+
+    traverse(parent, callback);
+  }
+
+  const elements: Element[] = [];
+
+  traverse(element, (node) => {
+    if (!(node instanceof Element)) {
+      return;
+    }
+
+    if (applyInert(node)) {
+      elements.push(node);
+    }
+  });
+
+  return () => {
+    elements.forEach((element) => {
+      restoreInert(element);
+    });
+  };
+}
+
 export function isFocusable(element: Element) {
   if (!(element instanceof Element)) {
     console.warn('Invalid element');
@@ -126,7 +217,7 @@ export function isFocusable(element: Element) {
   }
 
   // Fast path [hidden], [inert]
-  if (element.hasAttribute('hidden') || element.hasAttribute('inert')) {
+  if (element.hasAttribute('hidden') || isInert(element)) {
     return false;
   }
 
@@ -160,7 +251,7 @@ export function isFocusable(element: Element) {
 // Core
 // -----------------------------------------------------------------------------
 
-function getComposedChildren(node: Node): Element[] {
+function getChildrenComposed(node: Node) {
   if (node instanceof ShadowRoot) {
     return getChildren(node);
   }
@@ -184,6 +275,20 @@ function getComposedChildren(node: Node): Element[] {
   return getChildren(node);
 }
 
+function getParentComposed(node: Node) {
+  if (node instanceof Element && node.assignedSlot) {
+    return node.assignedSlot;
+  }
+
+  const parent = node.parentNode;
+
+  if (parent instanceof ShadowRoot) {
+    return parent.host as Element;
+  }
+
+  return parent instanceof Element ? parent : null;
+}
+
 function getRelativeFocusable(
   container: Element,
   offset: number,
@@ -201,7 +306,7 @@ function getRelativeFocusable(
     return null;
   }
 
-  if (!active || !containsDeep(container, active)) {
+  if (!active || !containsComposed(container, active)) {
     return null;
   }
 
@@ -222,6 +327,71 @@ function getRelativeFocusable(
   }
 
   return focusables[(offsetIndex + length) % length] ?? null;
+}
+
+function getSiblingsComposed(node: Element) {
+  if (node.assignedSlot) {
+    return [...node.assignedSlot.children].filter(
+      (child): child is Element => child instanceof Element && child !== node,
+    );
+  }
+
+  const parent = getParentComposed(node);
+
+  if (!parent) {
+    return [];
+  }
+
+  return getSiblings(node);
+}
+
+function isDisabledDeep(element: Element) {
+  let current: Node | null = element;
+
+  while (current) {
+    if (current instanceof ShadowRoot) {
+      if (current.mode !== 'open') {
+        return false;
+      }
+
+      current = current.host;
+      continue;
+    }
+
+    if (!(current instanceof Element)) {
+      current = current.parentNode;
+      continue;
+    }
+
+    // [disabled]
+    if (current === element && isFormControl(current) && isDisabled(current)) {
+      return true;
+    }
+
+    // [inert]
+    if (current.hasAttribute('inert')) {
+      return true;
+    }
+
+    // fieldset[disabled]
+    if (
+      isFormControl(element) &&
+      current.tagName === 'FIELDSET' &&
+      isDisabled(current)
+    ) {
+      if (
+        !current
+          .querySelector(':scope > legend:first-of-type')
+          ?.contains(element)
+      ) {
+        return true;
+      }
+    }
+
+    current = current.parentNode;
+  }
+
+  return false;
 }
 
 function normalizeRadioGroup(elements: Element[]) {
@@ -307,10 +477,47 @@ function sortByTabIndex(elements: Element[]) {
 }
 
 // -----------------------------------------------------------------------------
+// State
+// -----------------------------------------------------------------------------
+
+const inertRefCounts = new WeakMap<Element, number>();
+
+function applyInert(element: Element) {
+  if (isInert(element) && !inertRefCounts.has(element)) {
+    return false;
+  }
+
+  const count = inertRefCounts.get(element) ?? 0;
+  inertRefCounts.set(element, count + 1);
+
+  if (count === 0) {
+    setInert(element, true);
+  }
+
+  return true;
+}
+
+function restoreInert(element: Element) {
+  const count = inertRefCounts.get(element);
+
+  if (!count) {
+    return;
+  }
+
+  if (count === 1) {
+    inertRefCounts.delete(element);
+    setInert(element, false);
+    return;
+  }
+
+  inertRefCounts.set(element, count - 1);
+}
+
+// -----------------------------------------------------------------------------
 // Utils
 // -----------------------------------------------------------------------------
 
-function containsDeep(container: Node, element: Node) {
+function containsComposed(container: Node, element: Node) {
   let current: Node | null = element;
 
   while (current) {
@@ -327,6 +534,12 @@ function containsDeep(container: Node, element: Node) {
   }
 
   return false;
+}
+
+function focus(element: Element) {
+  if ('focus' in element && typeof element.focus === 'function') {
+    element.focus();
+  }
 }
 
 function getActiveElement() {
@@ -353,61 +566,34 @@ function getChildren(node: ParentNode) {
   return elements;
 }
 
+function getSiblings(node: Element) {
+  const parent = getParentComposed(node);
+
+  if (!parent) {
+    return [];
+  }
+
+  const elements: Element[] = [];
+
+  for (
+    let child = parent.firstElementChild;
+    child;
+    child = child.nextElementSibling
+  ) {
+    if (child !== node) {
+      elements[elements.length] = child;
+    }
+  }
+
+  return elements;
+}
+
 function getTabIndex(element: Element) {
   return 'tabIndex' in element ? Number(element.tabIndex) : 0;
 }
 
 function isDisabled(element: Element) {
   return 'disabled' in element && !!element.disabled;
-}
-
-function isDisabledDeep(element: Element) {
-  let current: Node | null = element;
-
-  while (current) {
-    if (current instanceof ShadowRoot) {
-      if (current.mode !== 'open') {
-        return false;
-      }
-
-      current = current.host;
-      continue;
-    }
-
-    if (!(current instanceof Element)) {
-      current = current.parentNode;
-      continue;
-    }
-
-    // [disabled]
-    if (current === element && isFormControl(current) && isDisabled(current)) {
-      return true;
-    }
-
-    // [inert]
-    if (current.hasAttribute('inert')) {
-      return true;
-    }
-
-    // fieldset[disabled]
-    if (
-      isFormControl(element) &&
-      current.tagName === 'FIELDSET' &&
-      isDisabled(current)
-    ) {
-      if (
-        !current
-          .querySelector(':scope > legend:first-of-type')
-          ?.contains(element)
-      ) {
-        return true;
-      }
-    }
-
-    current = current.parentNode;
-  }
-
-  return false;
 }
 
 function isFormControl(element: Element) {
@@ -420,10 +606,22 @@ function isFormControl(element: Element) {
   );
 }
 
+function isInert(element: Element) {
+  return 'inert' in element && !!element.inert;
+}
+
 function isUngroupedRadio(element: Element) {
   return (
     element instanceof HTMLInputElement &&
     element.type === 'radio' &&
     !!element.name
   );
+}
+
+function setInert(element: Element, boolean: boolean) {
+  if (boolean) {
+    element.setAttribute('inert', '');
+  } else {
+    element.removeAttribute('inert');
+  }
 }
