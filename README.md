@@ -1,6 +1,6 @@
 # Power Focusable
 
-High-precision focus management utility with shadow DOM support. Handles complex focus rules including tabindex ordering, radio groups, etc.
+High-precision focus management utility with full composed tree support. Handles complex focus rules including tabindex ordering, radio groups, inert, and shadow DOM.
 
 > [!NOTE]
 > Supports shadow DOM traversal via the composed tree. Only open shadow roots are included; closed shadow roots are not accessible.
@@ -14,10 +14,12 @@ npm i power-focusable
 ```ts
 // npm
 import {
+  createFocusTrap,
   getFocusables,
   getNextFocusable,
   getPreviousFocusable,
   hasFocusable,
+  inertOutside,
   isFocusable,
 } from 'power-focusable';
 
@@ -58,6 +60,17 @@ If `true`, wraps around to the first or last element when reaching the end.
 Used by `getNextFocusable` and `getPreviousFocusable`.
 
 ## 📦 APIs
+
+### `createFocusTrap`
+
+Creates a keyboard focus trap within the container. Automatically focuses the container itself when possible; otherwise focuses the first available focusable element.
+
+```ts
+const cleanup = createFocusTrap(container);
+// => () => void
+//
+// container: Element
+```
 
 ### `getFocusables`
 
@@ -126,6 +139,17 @@ hasFocusable(container);
 
 // Traverses the composed tree (including shadow DOM; slower)
 hasFocusable(container, { composed: true });
+```
+
+### `inertOutside`
+
+Temporarily applies `inert` to all elements outside the target element. Useful for modals, dialogs, and overlays.
+
+```ts
+const cleanup = inertOutside(element);
+// => () => void
+//
+// element: Element
 ```
 
 ### `isFocusable`
