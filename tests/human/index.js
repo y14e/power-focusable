@@ -199,7 +199,7 @@ function isDisabledDeep(element) {
     if (current === element && isFormControl(current) && isDisabled(current)) {
       return true;
     }
-    if (current.hasAttribute("inert")) {
+    if (isInert(current)) {
       return true;
     }
     if (isFormControl(element) && current.tagName === "FIELDSET" && isDisabled(current)) {
@@ -306,9 +306,18 @@ function getComposedParent(node) {
 }
 function getComposedSiblings(node) {
   if (node.assignedSlot) {
-    return [...node.assignedSlot.children].filter(
-      (child) => child instanceof Element && child !== node
-    );
+    const siblings = node.assignedSlot.children;
+    const filtered = [];
+    for (let i = 0, l = siblings.length; i < l; i++) {
+      const sibling = siblings[i];
+      if (sibling !== node) {
+        if (!(sibling instanceof Element)) {
+          continue;
+        }
+        filtered[filtered.length] = sibling;
+      }
+    }
+    return filtered;
   }
   const parent = getComposedParent(node);
   if (!parent) {
@@ -401,7 +410,7 @@ function setInert(element, boolean) {
  * Handles complex focus rules including tabindex ordering, radio groups, inert,
  * and shadow DOM.
  *
- * @version 3.0.1
+ * @version 3.0.2
  * @author Yusuke Kamiyamane
  * @license MIT
  * @copyright Copyright (c) Yusuke Kamiyamane

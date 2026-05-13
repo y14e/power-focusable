@@ -4,7 +4,7 @@
  * Handles complex focus rules including tabindex ordering, radio groups, inert,
  * and shadow DOM.
  *
- * @version 3.0.1
+ * @version 3.0.2
  * @author Yusuke Kamiyamane
  * @license MIT
  * @copyright Copyright (c) Yusuke Kamiyamane
@@ -315,7 +315,7 @@ function isDisabledDeep(element: Element) {
     }
 
     // [inert]
-    if (current.hasAttribute('inert')) {
+    if (isInert(current)) {
       return true;
     }
 
@@ -485,9 +485,22 @@ function getComposedParent(node: Node) {
 
 function getComposedSiblings(node: Element) {
   if (node.assignedSlot) {
-    return [...node.assignedSlot.children].filter(
-      (child): child is Element => child instanceof Element && child !== node,
-    );
+    const siblings = node.assignedSlot.children;
+    const filtered: Element[] = [];
+
+    for (let i = 0, l = siblings.length; i < l; i++) {
+      const sibling = siblings[i];
+
+      if (sibling !== node) {
+        if (!(sibling instanceof Element)) {
+          continue;
+        }
+
+        filtered[filtered.length] = sibling;
+      }
+    }
+
+    return filtered;
   }
 
   const parent = getComposedParent(node);
