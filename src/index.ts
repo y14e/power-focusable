@@ -4,7 +4,7 @@
  * Handles complex focus rules including tabindex ordering, radio groups, inert,
  * and shadow DOM.
  *
- * @version 3.0.2
+ * @version 3.1.0
  * @author Yusuke Kamiyamane
  * @license MIT
  * @copyright Copyright (c) Yusuke Kamiyamane
@@ -18,6 +18,7 @@
 export interface PowerFocusableOptions {
   readonly active?: Element | null;
   readonly composed?: boolean;
+  readonly filter?: (element: Element) => boolean;
   readonly wrap?: boolean;
 }
 
@@ -91,7 +92,7 @@ export function getFocusables(
     container = document.body;
   }
 
-  const { composed = false } = options;
+  const { composed = false, filter = () => true } = options;
   const elements: Element[] = [];
 
   if (composed) {
@@ -132,7 +133,7 @@ export function getFocusables(
     }
   }
 
-  return normalizeRadioGroup(sortByTabIndex(elements));
+  return normalizeRadioGroup(sortByTabIndex(elements)).filter(filter);
 }
 
 export function getNextFocusable(
@@ -259,9 +260,10 @@ function getRelativeFocusable(
   const {
     active = getActiveElement(),
     composed = false,
+    filter = () => true,
     wrap = false,
   } = options;
-  const focusables = getFocusables(container, { composed });
+  const focusables = getFocusables(container, { composed, filter });
   const { length } = focusables;
 
   if (!length) {

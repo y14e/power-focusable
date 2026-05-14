@@ -44,7 +44,7 @@ function getFocusables(container = document.body, options = {}) {
     console.warn("Invalid container element. Fallback: <body> element.");
     container = document.body;
   }
-  const { composed = false } = options;
+  const { composed = false, filter = () => true } = options;
   const elements = [];
   if (composed) {
     let traverse2 = function(node) {
@@ -75,7 +75,7 @@ function getFocusables(container = document.body, options = {}) {
       }
     }
   }
-  return normalizeRadioGroup(sortByTabIndex(elements));
+  return normalizeRadioGroup(sortByTabIndex(elements)).filter(filter);
 }
 function getNextFocusable(container = document.body, options = {}) {
   if (!(container instanceof Element)) {
@@ -159,9 +159,10 @@ function getRelativeFocusable(container, offset, options) {
   const {
     active = getActiveElement(),
     composed = false,
+    filter = () => true,
     wrap = false
   } = options;
-  const focusables = getFocusables(container, { composed });
+  const focusables = getFocusables(container, { composed, filter });
   const { length } = focusables;
   if (!length) {
     return null;
@@ -410,7 +411,7 @@ function setInert(element, boolean) {
  * Handles complex focus rules including tabindex ordering, radio groups, inert,
  * and shadow DOM.
  *
- * @version 3.0.2
+ * @version 3.1.0
  * @author Yusuke Kamiyamane
  * @license MIT
  * @copyright Copyright (c) Yusuke Kamiyamane
