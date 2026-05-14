@@ -35,9 +35,10 @@ import { ... } 'https://unpkg.com/power-focusable/dist/index.js';
 
 ```ts
 interface PowerFocusableOptions {
-  active?: Element | null; // default: document.activeElement
-  composed?: boolean;      // default: false
-  wrap?: boolean;          // default: false
+  active?: Element | null;                // default: document.activeElement
+  composed?: boolean;                     // default: false
+  filter?: (element: Element) => boolean; // default: () => true
+  wrap?: boolean;                         // default: false
 }
 ```
 
@@ -50,6 +51,14 @@ Used by `getNextFocusable` and `getPreviousFocusable`.
 ### `composed`
 
 If `true`, traverses the composed tree (including shadow DOM; slower)
+
+Used by `getFocusables`, `getNextFocusable`, `getPreviousFocusable`, and `hasFocusable`.
+
+### `filter`
+
+Custom filter function for excluding elements from focus traversal. Useful for advanced focus management such as portals, virtual focus regions, temporary exclusions, or custom focus scopes.
+
+The function should return `true` to include the element, or `false` to exclude it.
 
 Used by `getFocusables`, `getNextFocusable`, `getPreviousFocusable`, and `hasFocusable`.
 
@@ -84,6 +93,9 @@ getFocusables(container);
 
 // Traverses the composed tree (including shadow DOM; slower)
 getFocusables(container, { composed: true });
+
+// Uses custom filter function
+getFocusables(container, { filter: (element) => !element.matches('[data-skip-focus]') });
 ```
 
 ### `getNextFocusable`
@@ -101,6 +113,9 @@ getNextFocusable(container, { active: document.querySelector('.button') });
 
 // Traverses the composed tree (including shadow DOM; slower)
 getNextFocusable(container, { composed: true });
+
+// Uses custom filter function
+getNextFocusable(container, { filter: (element) => !element.matches('[data-skip-focus]') });
 
 // Wraps around to the first element when reaching the end
 getNextFocusable(container, { wrap: true });
@@ -122,6 +137,9 @@ getPreviousFocusable(container, { active: document.querySelector('.button') });
 // Traverses the composed tree (including shadow DOM; slower)
 getPreviousFocusable(container, { composed: true });
 
+// Uses custom filter function
+getPreviousFocusable(container, { filter: (element) => !element.matches('[data-skip-focus]') });
+
 //Wraps around to the last element when reaching the end
 getPreviousFocusable(container, { wrap: true });
 
@@ -139,6 +157,9 @@ hasFocusable(container);
 
 // Traverses the composed tree (including shadow DOM; slower)
 hasFocusable(container, { composed: true });
+
+// Uses custom filter function
+hasFocusable(container, { filter: (element) => !element.matches('[data-skip-focus]') });
 ```
 
 ### `inertOutside`
