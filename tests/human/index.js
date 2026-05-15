@@ -153,7 +153,7 @@ function isFocusable(element) {
 }
 function getRelativeFocusable(container, offset, options) {
   const {
-    active = getActiveElement(),
+    anchor = getActiveElement(),
     composed = false,
     filter = () => true,
     wrap = false
@@ -163,13 +163,13 @@ function getRelativeFocusable(container, offset, options) {
   if (!length) {
     return null;
   }
-  if (!active || !containsComposed(container, active)) {
+  if (!anchor || !containsComposed(container, anchor)) {
     return null;
   }
-  if (!(active instanceof Element)) {
+  if (!(anchor instanceof Element)) {
     return null;
   }
-  const currentIndex = focusables.indexOf(active);
+  const currentIndex = focusables.indexOf(anchor);
   if (currentIndex === -1) {
     return null;
   }
@@ -396,7 +396,7 @@ function isUngroupedRadio(element) {
  * Handles complex focus rules including tabindex ordering, radio groups, inert,
  * and shadow DOM.
  *
- * @version 3.1.1
+ * @version 4.0.0
  * @author Yusuke Kamiyamane
  * @license MIT
  * @copyright Copyright (c) Yusuke Kamiyamane

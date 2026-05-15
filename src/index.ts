@@ -4,7 +4,7 @@
  * Handles complex focus rules including tabindex ordering, radio groups, inert,
  * and shadow DOM.
  *
- * @version 3.1.1
+ * @version 4.0.0
  * @author Yusuke Kamiyamane
  * @license MIT
  * @copyright Copyright (c) Yusuke Kamiyamane
@@ -16,7 +16,7 @@
 // -----------------------------------------------------------------------------
 
 export interface PowerFocusableOptions {
-  readonly active?: Element | null;
+  readonly anchor?: Element | null;
   readonly composed?: boolean;
   readonly filter?: (element: Element) => boolean;
   readonly wrap?: boolean;
@@ -82,7 +82,7 @@ export function createFocusTrap(container: Element) {
 
 export function getFocusables(
   container: Element = document.body,
-  options: Omit<PowerFocusableOptions, 'active' | 'wrap'> = {},
+  options: Omit<PowerFocusableOptions, 'anchor' | 'wrap'> = {},
 ) {
   if (!(container instanceof Element)) {
     console.warn('Invalid container element. Fallback: <body> element.');
@@ -159,7 +159,7 @@ export function getPreviousFocusable(
 
 export function hasFocusable(
   container: Element = document.body,
-  options: Omit<PowerFocusableOptions, 'active' | 'wrap'> = {},
+  options: Omit<PowerFocusableOptions, 'anchor' | 'wrap'> = {},
 ) {
   if (!(container instanceof Element)) {
     console.warn('Invalid container element. Fallback: <body> element.');
@@ -253,7 +253,7 @@ function getRelativeFocusable(
   options: PowerFocusableOptions,
 ) {
   const {
-    active = getActiveElement(),
+    anchor = getActiveElement(),
     composed = false,
     filter = () => true,
     wrap = false,
@@ -265,15 +265,15 @@ function getRelativeFocusable(
     return null;
   }
 
-  if (!active || !containsComposed(container, active)) {
+  if (!anchor || !containsComposed(container, anchor)) {
     return null;
   }
 
-  if (!(active instanceof Element)) {
+  if (!(anchor instanceof Element)) {
     return null;
   }
 
-  const currentIndex = focusables.indexOf(active);
+  const currentIndex = focusables.indexOf(anchor);
 
   if (currentIndex === -1) {
     return null;

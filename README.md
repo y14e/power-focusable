@@ -35,14 +35,14 @@ import { ... } 'https://unpkg.com/power-focusable/dist/index.js';
 
 ```ts
 interface PowerFocusableOptions {
-  active?: Element | null;                // default: document.activeElement
+  anchor?: Element | null;                // default: document.activeElement
   composed?: boolean;                     // default: false
   filter?: (element: Element) => boolean; // default: () => true
   wrap?: boolean;                         // default: false
 }
 ```
 
-### `active`
+### `anchor`
 
 Specifies the starting element.
 
@@ -109,7 +109,7 @@ getNextFocusable(container);
 // container (optional): Element (default: <body>)
 
 // Specifies the starting element
-getNextFocusable(container, { active: document.querySelector('.button') });
+getNextFocusable(container, { anchor: document.querySelector('.button') });
 
 // Traverses the composed tree (including shadow DOM; slower)
 getNextFocusable(container, { composed: true });
@@ -132,7 +132,7 @@ getPreviousFocusable(container);
 // container (optional): Element (default: <body>)
 
 // Specifies the starting element
-getPreviousFocusable(container, { active: document.querySelector('.button') });
+getPreviousFocusable(container, { anchor: document.querySelector('.button') });
 
 // Traverses the composed tree (including shadow DOM; slower)
 getPreviousFocusable(container, { composed: true });
