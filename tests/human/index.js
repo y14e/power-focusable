@@ -7,9 +7,7 @@ function createFocusTrap(container) {
   focus(container);
   if (getActiveElement() !== container) {
     const first = getFocusables(container, { composed: true })[0];
-    if (first) {
-      focus(first);
-    }
+    first && focus(first);
   }
   function onKeyDown(event) {
     const { key, altKey, ctrlKey, metaKey, shiftKey } = event;
@@ -119,9 +117,7 @@ function inertOutside(element) {
     if (!(node instanceof Element)) {
       return;
     }
-    if (applyInert(node)) {
-      elements.push(node);
-    }
+    applyInert(node) && elements.push(node);
   });
   return () => {
     elements.forEach((element2) => {
@@ -333,9 +329,7 @@ function applyInert(element) {
   }
   const count = inertRefCounts.get(element) ?? 0;
   inertRefCounts.set(element, count + 1);
-  if (count === 0) {
-    setInert(element, true);
-  }
+  count === 0 && element.toggleAttribute("inert", true);
   return true;
 }
 function restoreInert(element) {
@@ -345,15 +339,13 @@ function restoreInert(element) {
   }
   if (count === 1) {
     inertRefCounts.delete(element);
-    setInert(element, false);
+    element.toggleAttribute("inert", false);
     return;
   }
   inertRefCounts.set(element, count - 1);
 }
 function focus(element) {
-  if ("focus" in element && typeof element.focus === "function") {
-    element.focus();
-  }
+  "focus" in element && typeof element.focus === "function" && element.focus();
 }
 function getActiveElement() {
   let current = document.activeElement;
@@ -398,20 +390,13 @@ function isInert(element) {
 function isUngroupedRadio(element) {
   return element instanceof HTMLInputElement && element.type === "radio" && !!element.name;
 }
-function setInert(element, boolean) {
-  if (boolean) {
-    element.setAttribute("inert", "");
-  } else {
-    element.removeAttribute("inert");
-  }
-}
 /**
  * Power Focusable
  * High-precision focus management utility with full composed tree support.
  * Handles complex focus rules including tabindex ordering, radio groups, inert,
  * and shadow DOM.
  *
- * @version 3.1.0
+ * @version 3.1.1
  * @author Yusuke Kamiyamane
  * @license MIT
  * @copyright Copyright (c) Yusuke Kamiyamane

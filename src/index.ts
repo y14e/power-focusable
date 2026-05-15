@@ -4,7 +4,7 @@
  * Handles complex focus rules including tabindex ordering, radio groups, inert,
  * and shadow DOM.
  *
- * @version 3.1.0
+ * @version 3.1.1
  * @author Yusuke Kamiyamane
  * @license MIT
  * @copyright Copyright (c) Yusuke Kamiyamane
@@ -41,10 +41,7 @@ export function createFocusTrap(container: Element) {
 
   if (getActiveElement() !== container) {
     const first = getFocusables(container, { composed: true })[0];
-
-    if (first) {
-      focus(first);
-    }
+    first && focus(first);
   }
 
   function onKeyDown(event: KeyboardEvent) {
@@ -199,9 +196,7 @@ export function inertOutside(element: Element) {
       return;
     }
 
-    if (applyInert(node)) {
-      elements.push(node);
-    }
+    applyInert(node) && elements.push(node);
   });
 
   return () => {
@@ -377,10 +372,8 @@ function normalizeRadioGroup(elements: Element[]) {
   for (const group of map.values()) {
     /* Safety
     const radios = group.filter(isFocusable);
-
-    if (radios.length) {
+    radios.length &&
       placeholder.add(radios.find((radio) => radio.checked) ?? radios[0]);
-    }
     */
     placeholder.add(group.find((radio) => radio.checked) ?? group[0]);
   }
@@ -527,11 +520,7 @@ function applyInert(element: Element) {
 
   const count = inertRefCounts.get(element) ?? 0;
   inertRefCounts.set(element, count + 1);
-
-  if (count === 0) {
-    setInert(element, true);
-  }
-
+  count === 0 && element.toggleAttribute('inert', true);
   return true;
 }
 
@@ -544,7 +533,7 @@ function restoreInert(element: Element) {
 
   if (count === 1) {
     inertRefCounts.delete(element);
-    setInert(element, false);
+    element.toggleAttribute('inert', false);
     return;
   }
 
@@ -556,9 +545,7 @@ function restoreInert(element: Element) {
 // -----------------------------------------------------------------------------
 
 function focus(element: Element) {
-  if ('focus' in element && typeof element.focus === 'function') {
-    element.focus();
-  }
+  'focus' in element && typeof element.focus === 'function' && element.focus();
 }
 
 function getActiveElement() {
@@ -635,12 +622,4 @@ function isUngroupedRadio(element: Element) {
     element.type === 'radio' &&
     !!element.name
   );
-}
-
-function setInert(element: Element, boolean: boolean) {
-  if (boolean) {
-    element.setAttribute('inert', '');
-  } else {
-    element.removeAttribute('inert');
-  }
 }
