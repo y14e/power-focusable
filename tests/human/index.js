@@ -1,6 +1,6 @@
 // src/index.ts
 var FOCUSABLE_SELECTOR = `:is(a[href], area[href], button, embed, iframe, input:not([type="hidden" i]), object, select, details > summary:first-of-type, textarea, [contenteditable]:not([contenteditable="false" i]), [controls], [tabindex]):not(:disabled, [hidden], [inert], [tabindex="-1"])`;
-function createFocusTrap(container) {
+function createFocusTrap(container = document.body) {
   if (!(container instanceof Element)) {
     throw new Error("Invalid container element");
   }
@@ -37,7 +37,7 @@ function createFocusTrap(container) {
     controller = null;
   };
 }
-function getFocusables(container, options = {}) {
+function getFocusables(container = document.body, options = {}) {
   if (!(container instanceof Element)) {
     console.warn("Invalid container element. Fallback: <body> element.");
     container = document.body;
@@ -75,21 +75,21 @@ function getFocusables(container, options = {}) {
   }
   return normalizeRadioGroup(sortByTabIndex(elements)).filter(filter);
 }
-function getNextFocusable(container, options = {}) {
+function getNextFocusable(container = document.body, options = {}) {
   if (!(container instanceof Element)) {
     console.warn("Invalid container element. Fallback: <body> element.");
     container = document.body;
   }
   return getRelativeFocusable(container, 1, options);
 }
-function getPreviousFocusable(container, options = {}) {
+function getPreviousFocusable(container = document.body, options = {}) {
   if (!(container instanceof Element)) {
     console.warn("Invalid container element. Fallback: <body> element.");
     container = document.body;
   }
   return getRelativeFocusable(container, -1, options);
 }
-function hasFocusable(container, options = {}) {
+function hasFocusable(container = document.body, options = {}) {
   if (!(container instanceof Element)) {
     console.warn("Invalid container element. Fallback: <body> element.");
     container = document.body;
@@ -396,7 +396,7 @@ function isUngroupedRadio(element) {
  * Handles complex focus rules including tabindex ordering, radio groups, inert,
  * and shadow DOM.
  *
- * @version 4.0.1
+ * @version 4.0.2
  * @author Yusuke Kamiyamane
  * @license MIT
  * @copyright Copyright (c) Yusuke Kamiyamane
