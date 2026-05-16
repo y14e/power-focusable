@@ -4,7 +4,7 @@
  * Handles complex focus rules including tabindex ordering, radio groups, inert,
  * and shadow DOM.
  *
- * @version 4.0.1
+ * @version 4.0.2
  * @author Yusuke Kamiyamane
  * @license MIT
  * @copyright Copyright (c) Yusuke Kamiyamane
@@ -32,7 +32,7 @@ const FOCUSABLE_SELECTOR = `:is(a[href], area[href], button, embed, iframe, inpu
 // APIs
 // -----------------------------------------------------------------------------
 
-export function createFocusTrap(container: Element) {
+export function createFocusTrap(container: Element = document.body) {
   if (!(container instanceof Element)) {
     throw new Error('Invalid container element');
   }
@@ -81,7 +81,7 @@ export function createFocusTrap(container: Element) {
 }
 
 export function getFocusables(
-  container?: Element,
+  container: Element = document.body,
   options: Omit<PowerFocusableOptions, 'anchor' | 'wrap'> = {},
 ) {
   if (!(container instanceof Element)) {
@@ -134,7 +134,7 @@ export function getFocusables(
 }
 
 export function getNextFocusable(
-  container?: Element,
+  container: Element = document.body,
   options: PowerFocusableOptions = {},
 ) {
   if (!(container instanceof Element)) {
@@ -146,7 +146,7 @@ export function getNextFocusable(
 }
 
 export function getPreviousFocusable(
-  container?: Element,
+  container: Element = document.body,
   options: PowerFocusableOptions = {},
 ) {
   if (!(container instanceof Element)) {
@@ -158,7 +158,7 @@ export function getPreviousFocusable(
 }
 
 export function hasFocusable(
-  container?: Element,
+  container: Element = document.body,
   options: Omit<PowerFocusableOptions, 'anchor' | 'wrap'> = {},
 ) {
   if (!(container instanceof Element)) {
