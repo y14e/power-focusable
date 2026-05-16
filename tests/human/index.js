@@ -37,7 +37,7 @@ function createFocusTrap(container) {
     controller = null;
   };
 }
-function getFocusables(container = document.body, options = {}) {
+function getFocusables(container, options = {}) {
   if (!(container instanceof Element)) {
     console.warn("Invalid container element. Fallback: <body> element.");
     container = document.body;
@@ -75,21 +75,21 @@ function getFocusables(container = document.body, options = {}) {
   }
   return normalizeRadioGroup(sortByTabIndex(elements)).filter(filter);
 }
-function getNextFocusable(container = document.body, options = {}) {
+function getNextFocusable(container, options = {}) {
   if (!(container instanceof Element)) {
     console.warn("Invalid container element. Fallback: <body> element.");
     container = document.body;
   }
   return getRelativeFocusable(container, 1, options);
 }
-function getPreviousFocusable(container = document.body, options = {}) {
+function getPreviousFocusable(container, options = {}) {
   if (!(container instanceof Element)) {
     console.warn("Invalid container element. Fallback: <body> element.");
     container = document.body;
   }
   return getRelativeFocusable(container, -1, options);
 }
-function hasFocusable(container = document.body, options = {}) {
+function hasFocusable(container, options = {}) {
   if (!(container instanceof Element)) {
     console.warn("Invalid container element. Fallback: <body> element.");
     container = document.body;
@@ -396,7 +396,7 @@ function isUngroupedRadio(element) {
  * Handles complex focus rules including tabindex ordering, radio groups, inert,
  * and shadow DOM.
  *
- * @version 4.0.0
+ * @version 4.0.1
  * @author Yusuke Kamiyamane
  * @license MIT
  * @copyright Copyright (c) Yusuke Kamiyamane
