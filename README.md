@@ -1,6 +1,6 @@
 # Power Focusable
 
-High-precision focus management utility with full composed tree support. Handles complex focus rules including tabindex ordering, radio groups, inert, and shadow DOM.
+High-precision focus management utility with full composed tree support. Handles complex focus rules including tabindex ordering, radio groups, inert.
 
 > [!NOTE]
 > Supports shadow DOM traversal via the composed tree. Only open shadow roots are included; closed shadow roots are not accessible.
@@ -35,10 +35,11 @@ import { ... } 'https://unpkg.com/power-focusable/dist/index.js';
 
 ```ts
 interface PowerFocusableOptions {
-  anchor?: Element | null;                // default: document.activeElement
-  composed?: boolean;                     // default: false
-  filter?: (element: Element) => boolean; // default: () => true
-  wrap?: boolean;                         // default: false
+  anchor?: Element | null;                 // default: document.activeElement
+  composed?: boolean;                      // default: false
+  filter?: (element: Element) => boolean;  // default: () => true
+  include?: (element: Element) => boolean; // default: undefined
+  wrap?: boolean;                          // default: false
 }
 ```
 
@@ -56,9 +57,17 @@ Used by `getFocusables`, `getNextFocusable`, `getPreviousFocusable`, and `hasFoc
 
 ### `filter`
 
-Custom filter function for excluding elements from focus traversal. Useful for advanced focus management such as portals, virtual focus regions, temporary exclusions, or custom focus scopes.
+Custom filter function for excluding elements from focus traversal.
 
 The function should return `true` to include the element, or `false` to exclude it.
+
+Used by `getFocusables`, `getNextFocusable`, `getPreviousFocusable`, and `hasFocusable`.
+
+### `include`
+
+Custom include function for adding elements to focus traversal even if they are not normally focusable.
+
+The function should return `true` to include the element, or `false` to ignore it.
 
 Used by `getFocusables`, `getNextFocusable`, `getPreviousFocusable`, and `hasFocusable`.
 
