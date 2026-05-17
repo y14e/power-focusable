@@ -26,7 +26,7 @@ import {
 // CDNs
 import { ... } 'https://esm.sh/power-focusable'
 // or
-import { ... } 'https://cdn.jsdelivr.net/npm/power-focusable/dist/index.js';
+import { ... } 'https://cdn.jsdelivr.net/npm/power-focusable/+esm';
 // or
 import { ... } 'https://unpkg.com/power-focusable/dist/index.js';
 ```
