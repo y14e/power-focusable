@@ -25,13 +25,13 @@
     "lint": "tsc --noEmit"
   },
   "keywords": [
+    "a11y",
+    "accessibility",
     "focus",
     "focus-management",
     "focusable",
     "shadow-dom",
     "shadowdom",
-    "a11y",
-    "accessibility",
     "typescript",
     "utility"
   ],
