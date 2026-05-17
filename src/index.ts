@@ -1,10 +1,9 @@
 /**
  * Power Focusable
  * High-precision focus management utility with full composed tree support.
- * Handles complex focus rules including tabindex ordering, radio groups, inert,
- * and shadow DOM.
+ * Handles complex focus rules including tabindex ordering, radio groups, inert.
  *
- * @version 4.0.2
+ * @version 4.1.0
  * @author Yusuke Kamiyamane
  * @license MIT
  * @copyright Copyright (c) Yusuke Kamiyamane
@@ -19,6 +18,7 @@ export interface PowerFocusableOptions {
   readonly anchor?: Element | null;
   readonly composed?: boolean;
   readonly filter?: (element: Element) => boolean;
+  readonly include?: ((element: Element) => boolean) | undefined;
   readonly wrap?: boolean;
 }
 
@@ -89,13 +89,13 @@ export function getFocusables(
     container = document.body;
   }
 
-  const { composed = false, filter = () => true } = options;
+  const { composed = false, filter = () => true, include } = options;
   const elements: Element[] = [];
 
-  if (composed) {
+  if (composed || typeof include === 'function') {
     function traverse(node: Node) {
       if (node instanceof Element) {
-        if (isFocusable(node)) {
+        if (isFocusable(node) || include?.(node)) {
           elements[elements.length] = node;
         }
       }
@@ -256,9 +256,10 @@ function getRelativeFocusable(
     anchor = getActiveElement(),
     composed = false,
     filter = () => true,
+    include,
     wrap = false,
   } = options;
-  const focusables = getFocusables(container, { composed, filter });
+  const focusables = getFocusables(container, { composed, filter, include });
   const { length } = focusables;
 
   if (!length) {
