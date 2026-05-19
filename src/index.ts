@@ -3,7 +3,7 @@
  * High-precision focus management utility with full composed tree support.
  * Handles complex focus rules including tabindex ordering, radio groups, inert.
  *
- * @version 4.1.1
+ * @version 4.1.2
  * @author Yusuke Kamiyamane
  * @license MIT
  * @copyright Copyright (c) Yusuke Kamiyamane
@@ -17,7 +17,7 @@
 export interface PowerFocusableOptions {
   readonly anchor?: Element | null;
   readonly composed?: boolean;
-  readonly filter?: (element: Element) => boolean;
+  readonly filter?: ((element: Element) => boolean) | undefined;
   readonly include?: ((element: Element) => boolean) | undefined;
   readonly wrap?: boolean;
 }
@@ -89,10 +89,22 @@ export function getFocusables(
     container = document.body;
   }
 
-  const { composed = false, filter = () => true, include } = options;
+  const { composed = false } = options;
+  let { filter, include } = options;
+
+  if (typeof filter !== 'function') {
+    console.warn('Invalid filter function. Fallback: undefined.');
+    filter = undefined;
+  }
+
+  if (typeof include !== 'function') {
+    console.warn('Invalid include function. Fallback: undefined.');
+    include = undefined;
+  }
+
   const elements: Element[] = [];
 
-  if (composed || typeof include === 'function') {
+  if (composed || include) {
     function traverse(node: Node) {
       if (node instanceof Element) {
         if (isFocusable(node) || include?.(node)) {
@@ -130,7 +142,8 @@ export function getFocusables(
     }
   }
 
-  return normalizeRadioGroup(sortByTabIndex(elements)).filter(filter);
+  const unfiltered = normalizeRadioGroup(sortByTabIndex(elements));
+  return filter ? unfiltered.filter(filter) : unfiltered;
 }
 
 export function getNextFocusable(
@@ -255,7 +268,7 @@ function getRelativeFocusable(
   const {
     anchor = getActiveElement(),
     composed = false,
-    filter = () => true,
+    filter,
     include,
     wrap = false,
   } = options;
