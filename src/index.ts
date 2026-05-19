@@ -92,12 +92,12 @@ export function getFocusables(
   const { composed = false } = options;
   let { filter, include } = options;
 
-  if (typeof filter !== 'function') {
+  if (filter && typeof filter !== 'function') {
     console.warn('Invalid filter function. Fallback: undefined.');
     filter = undefined;
   }
 
-  if (typeof include !== 'function') {
+  if (include && typeof include !== 'function') {
     console.warn('Invalid include function. Fallback: undefined.');
     include = undefined;
   }
