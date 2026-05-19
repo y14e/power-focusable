@@ -37,7 +37,7 @@ import { ... } 'https://unpkg.com/power-focusable/dist/index.js';
 interface PowerFocusableOptions {
   anchor?: Element | null;                               // default: document.activeElement
   composed?: boolean;                                    // default: false
-  filter: ((element: Element) => boolean) | undefined;
+  filter?: ((element: Element) => boolean) | undefined;
   include?: ((element: Element) => boolean) | undefined;
   wrap?: boolean;                                        // default: false
 }
