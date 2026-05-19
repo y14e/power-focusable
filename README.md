@@ -35,11 +35,11 @@ import { ... } 'https://unpkg.com/power-focusable/dist/index.js';
 
 ```ts
 interface PowerFocusableOptions {
-  anchor?: Element | null;                               // default: document.activeElement
-  composed?: boolean;                                    // default: false
-  filter?: ((element: Element) => boolean) | undefined;
-  include?: ((element: Element) => boolean) | undefined;
-  wrap?: boolean;                                        // default: false
+  anchor?: Element | null;                 // default: active element
+  composed?: boolean;                      // default: false
+  filter?: (element: Element) => boolean;
+  include?: (element: Element) => boolean;
+  wrap?: boolean;                          // default: false
 }
 ```
 
