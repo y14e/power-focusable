@@ -3,7 +3,7 @@
  * High-precision focus management utility with full composed tree support.
  * Handles complex focus rules including tabindex ordering, radio groups, inert.
  *
- * @version 4.1.3
+ * @version 4.1.4
  * @author Yusuke Kamiyamane
  * @license MIT
  * @copyright Copyright (c) Yusuke Kamiyamane
@@ -37,11 +37,11 @@ export function createFocusTrap(container: Element = document.body) {
     throw new Error('Invalid container element');
   }
 
-  focus(container);
+  focusElement(container);
 
   if (getActiveElement() !== container) {
     const first = getFocusables(container, { composed: true })[0];
-    first && focus(first);
+    first && focusElement(first);
   }
 
   function onKeyDown(event: KeyboardEvent) {
@@ -65,7 +65,7 @@ export function createFocusTrap(container: Element = document.body) {
     }
 
     event.preventDefault();
-    focus(focusable);
+    focusElement(focusable);
   }
 
   let controller: AbortController | null = new AbortController();
@@ -93,12 +93,12 @@ export function getFocusables(
   let { filter, include } = options;
 
   if (filter && typeof filter !== 'function') {
-    console.warn('Invalid filter function. Fallback: undefined.');
+    console.warn('Invalid filter function');
     filter = undefined;
   }
 
   if (include && typeof include !== 'function') {
-    console.warn('Invalid include function. Fallback: undefined.');
+    console.warn('Invalid include function');
     include = undefined;
   }
 
@@ -281,7 +281,7 @@ function getRelativeFocusable(
   }
 
   if (!containsComposed(container, anchor)) {
-    console.warn('Mismatch elements');
+    console.warn('Anchor (active) element not within container');
     return null;
   }
 
@@ -563,7 +563,7 @@ function restoreInert(element: Element) {
 // Utils
 // -----------------------------------------------------------------------------
 
-function focus(element: Element) {
+function focusElement(element: Element) {
   'focus' in element && typeof element.focus === 'function' && element.focus();
 }
 
