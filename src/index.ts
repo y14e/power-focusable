@@ -3,7 +3,7 @@
  * High-precision focus management utility with full composed tree support.
  * Handles complex focus rules including tabindex ordering, radio groups, inert.
  *
- * @version 4.1.4
+ * @version 4.1.5
  * @author Yusuke Kamiyamane
  * @license MIT
  * @copyright Copyright (c) Yusuke Kamiyamane
@@ -32,7 +32,9 @@ const FOCUSABLE_SELECTOR = `:is(a[href], area[href], button, embed, iframe, inpu
 // APIs
 // -----------------------------------------------------------------------------
 
-export function createFocusTrap(container: Element = document.body) {
+export function createFocusTrap(
+  container: Element = document.body,
+): () => void {
   if (!(container instanceof Element)) {
     throw new Error('Invalid container element');
   }
@@ -44,7 +46,7 @@ export function createFocusTrap(container: Element = document.body) {
     first && focusElement(first);
   }
 
-  function onKeyDown(event: KeyboardEvent) {
+  function onKeyDown(event: KeyboardEvent): void {
     const { key, altKey, ctrlKey, metaKey, shiftKey } = event;
 
     if (key !== 'Tab' || altKey || ctrlKey || metaKey) {
@@ -83,7 +85,7 @@ export function createFocusTrap(container: Element = document.body) {
 export function getFocusables(
   container: Element = document.body,
   options: Omit<PowerFocusableOptions, 'anchor' | 'wrap'> = {},
-) {
+): Element[] {
   if (!(container instanceof Element)) {
     console.warn('Invalid container element. Fallback: <body> element.');
     container = document.body;
@@ -105,7 +107,7 @@ export function getFocusables(
   const elements: Element[] = [];
 
   if (composed || include) {
-    function traverse(node: Node) {
+    function traverse(node: Node): void {
       if (node instanceof Element) {
         if (isFocusable(node) || include?.(node)) {
           elements[elements.length] = node;
@@ -149,7 +151,7 @@ export function getFocusables(
 export function getNextFocusable(
   container: Element = document.body,
   options: PowerFocusableOptions = {},
-) {
+): Element | null {
   if (!(container instanceof Element)) {
     console.warn('Invalid container element. Fallback: <body> element.');
     container = document.body;
@@ -161,7 +163,7 @@ export function getNextFocusable(
 export function getPreviousFocusable(
   container: Element = document.body,
   options: PowerFocusableOptions = {},
-) {
+): Element | null {
   if (!(container instanceof Element)) {
     console.warn('Invalid container element. Fallback: <body> element.');
     container = document.body;
@@ -173,7 +175,7 @@ export function getPreviousFocusable(
 export function hasFocusable(
   container: Element = document.body,
   options: Omit<PowerFocusableOptions, 'anchor' | 'wrap'> = {},
-) {
+): boolean {
   if (!(container instanceof Element)) {
     console.warn('Invalid container element. Fallback: <body> element.');
     container = document.body;
@@ -182,13 +184,13 @@ export function hasFocusable(
   return !!getFocusables(container, options).length;
 }
 
-export function inertOutside(element: Element) {
+export function inertOutside(element: Element): () => void {
   if (!(element instanceof Element)) {
     console.warn('Invalid element');
     return () => {};
   }
 
-  function traverse(node: Element, callback: (_: Element) => void) {
+  function traverse(node: Element, callback: (_: Element) => void): void {
     const parent = getComposedParent(node);
 
     if (!parent) {
@@ -219,7 +221,7 @@ export function inertOutside(element: Element) {
   };
 }
 
-export function isFocusable(element: Element) {
+export function isFocusable(element: Element): boolean {
   if (!(element instanceof Element)) {
     console.warn('Invalid element');
     return false;
@@ -264,7 +266,7 @@ function getRelativeFocusable(
   container: Element,
   offset: number,
   options: PowerFocusableOptions,
-) {
+): Element | null {
   let anchor = options.anchor ?? getActiveElement();
   const { composed = false, filter, include, wrap = false } = options;
 
@@ -307,7 +309,7 @@ function getRelativeFocusable(
   return focusables[(offsetIndex + length) % length] ?? null;
 }
 
-function isDisabledDeep(element: Element) {
+function isDisabledDeep(element: Element): boolean {
   let current: Node | null = element;
 
   while (current) {
@@ -356,7 +358,7 @@ function isDisabledDeep(element: Element) {
   return false;
 }
 
-function normalizeRadioGroup(elements: Element[]) {
+function normalizeRadioGroup(elements: Element[]): Element[] {
   let map: Map<string, HTMLInputElement[]> | null = null;
 
   for (let i = 0, l = elements.length; i < l; i++) {
@@ -389,11 +391,6 @@ function normalizeRadioGroup(elements: Element[]) {
   const placeholder = new Set();
 
   for (const group of map.values()) {
-    /* Safety
-    const radios = group.filter(isFocusable);
-    radios.length &&
-      placeholder.add(radios.find((radio) => radio.checked) ?? radios[0]);
-    */
     placeholder.add(group.find((radio) => radio.checked) ?? group[0]);
   }
 
@@ -406,7 +403,7 @@ function normalizeRadioGroup(elements: Element[]) {
   });
 }
 
-function sortByTabIndex(elements: Element[]) {
+function sortByTabIndex(elements: Element[]): Element[] {
   const ordered: Element[] = [];
   const natural: Element[] = [];
 
@@ -440,7 +437,7 @@ function sortByTabIndex(elements: Element[]) {
 // Composed
 // -----------------------------------------------------------------------------
 
-function containsComposed(container: Node, element: Node) {
+function containsComposed(container: Node, element: Node): boolean {
   let current: Node | null = element;
 
   while (current) {
@@ -459,7 +456,7 @@ function containsComposed(container: Node, element: Node) {
   return false;
 }
 
-function getComposedChildren(node: Node) {
+function getComposedChildren(node: Node): Element[] {
   if (node instanceof ShadowRoot) {
     return getChildren(node);
   }
@@ -483,7 +480,7 @@ function getComposedChildren(node: Node) {
   return getChildren(node);
 }
 
-function getComposedParent(node: Node) {
+function getComposedParent(node: Node): Element | null {
   if (node instanceof Element && node.assignedSlot) {
     return node.assignedSlot;
   }
@@ -497,7 +494,7 @@ function getComposedParent(node: Node) {
   return parent instanceof Element ? parent : null;
 }
 
-function getComposedSiblings(node: Element) {
+function getComposedSiblings(node: Element): Element[] {
   if (node.assignedSlot) {
     const siblings = node.assignedSlot.children;
     const filtered: Element[] = [];
@@ -527,23 +524,23 @@ function getComposedSiblings(node: Element) {
 }
 
 // -----------------------------------------------------------------------------
-// State
+// Inert
 // -----------------------------------------------------------------------------
 
 const inertRefCounts = new WeakMap<Element, number>();
 
-function applyInert(element: Element) {
+function applyInert(element: Element): boolean {
   if (isInert(element) && !inertRefCounts.has(element)) {
     return false;
   }
 
   const count = inertRefCounts.get(element) ?? 0;
   inertRefCounts.set(element, count + 1);
-  count === 0 && element.toggleAttribute('inert', true);
+  count === 0 && element.setAttribute('inert', '');
   return true;
 }
 
-function restoreInert(element: Element) {
+function restoreInert(element: Element): void {
   const count = inertRefCounts.get(element);
 
   if (!count) {
@@ -552,7 +549,7 @@ function restoreInert(element: Element) {
 
   if (count === 1) {
     inertRefCounts.delete(element);
-    element.toggleAttribute('inert', false);
+    element.removeAttribute('inert');
     return;
   }
 
@@ -563,11 +560,11 @@ function restoreInert(element: Element) {
 // Utils
 // -----------------------------------------------------------------------------
 
-function focusElement(element: Element) {
+function focusElement(element: Element): void {
   'focus' in element && typeof element.focus === 'function' && element.focus();
 }
 
-function getActiveElement() {
+function getActiveElement(): Element | null {
   let current = document.activeElement;
 
   while (current?.shadowRoot?.activeElement) {
@@ -577,7 +574,7 @@ function getActiveElement() {
   return current;
 }
 
-function getChildren(node: ParentNode) {
+function getChildren(node: ParentNode): Element[] {
   const elements: Element[] = [];
 
   for (
@@ -591,7 +588,7 @@ function getChildren(node: ParentNode) {
   return elements;
 }
 
-function getSiblings(node: Element) {
+function getSiblings(node: Element): Element[] {
   const parent = getComposedParent(node);
 
   if (!parent) {
@@ -613,15 +610,15 @@ function getSiblings(node: Element) {
   return elements;
 }
 
-function getTabIndex(element: Element) {
+function getTabIndex(element: Element): number {
   return 'tabIndex' in element ? Number(element.tabIndex) : 0;
 }
 
-function isDisabled(element: Element) {
+function isDisabled(element: Element): boolean {
   return 'disabled' in element && !!element.disabled;
 }
 
-function isFormControl(element: Element) {
+function isFormControl(element: Element): boolean {
   const name = element.tagName;
   return (
     name === 'BUTTON' ||
@@ -631,11 +628,11 @@ function isFormControl(element: Element) {
   );
 }
 
-function isInert(element: Element) {
+function isInert(element: Element): boolean {
   return 'inert' in element && !!element.inert;
 }
 
-function isUngroupedRadio(element: Element) {
+function isUngroupedRadio(element: Element): boolean {
   return (
     element instanceof HTMLInputElement &&
     element.type === 'radio' &&
