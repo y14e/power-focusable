@@ -105,11 +105,14 @@ getFocusables(container, { composed: true });
 
 // Uses custom filter function
 getFocusables(container, { filter: (element) => !element.matches('[data-skip-focus]') });
+
+// Uses custom include function
+getFocusables(container, { filter: (element) => element.matches('[data-roving-tabindex]') });
 ```
 
 ### `getNextFocusable`
 
-Returns the next focusable element within the container, starting from `document.activeElement`.
+Returns the next focusable element within the container, starting from active element.
 
 ```ts
 getNextFocusable(container);
@@ -126,13 +129,16 @@ getNextFocusable(container, { composed: true });
 // Uses custom filter function
 getNextFocusable(container, { filter: (element) => !element.matches('[data-skip-focus]') });
 
+// Uses custom include function
+getNextFocusable(container, { filter: (element) => element.matches('[data-roving-tabindex]') });
+
 // Wraps around to the first element when reaching the end
 getNextFocusable(container, { wrap: true });
 ```
 
 ### `getPreviousFocusable`
 
-Returns the previous focusable element within the container, starting from `document.activeElement`.
+Returns the previous focusable element within the container, starting from active element.
 
 ```ts
 getPreviousFocusable(container);
@@ -148,6 +154,9 @@ getPreviousFocusable(container, { composed: true });
 
 // Uses custom filter function
 getPreviousFocusable(container, { filter: (element) => !element.matches('[data-skip-focus]') });
+
+// Uses custom include function
+getPreviousFocusable(container, { filter: (element) => element.matches('[data-roving-tabindex]') });
 
 // Wraps around to the last element when reaching the end
 getPreviousFocusable(container, { wrap: true });
@@ -169,6 +178,9 @@ hasFocusable(container, { composed: true });
 
 // Uses custom filter function
 hasFocusable(container, { filter: (element) => !element.matches('[data-skip-focus]') });
+
+// Uses custom include function
+hasFocusable(container, { filter: (element) => element.matches('[data-roving-tabindex]') });
 ```
 
 ### `inertOutside`
