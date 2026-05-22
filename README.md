@@ -149,7 +149,7 @@ getPreviousFocusable(container, { composed: true });
 // Uses custom filter function
 getPreviousFocusable(container, { filter: (element) => !element.matches('[data-skip-focus]') });
 
-//Wraps around to the last element when reaching the end
+// Wraps around to the last element when reaching the end
 getPreviousFocusable(container, { wrap: true });
 
 ```
