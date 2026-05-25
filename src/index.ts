@@ -3,7 +3,7 @@
  * High-precision focus management utility with full composed tree support.
  * Handles complex focus rules including tabindex ordering, radio groups, inert.
  *
- * @version 4.1.6
+ * @version 4.1.7
  * @author Yusuke Kamiyamane
  * @license MIT
  * @copyright Copyright (c) Yusuke Kamiyamane
@@ -256,6 +256,11 @@ function getRelativeFocusable(
   offset: number,
   options: PowerFocusableOptions,
 ): Element | null {
+  if (!(container instanceof Element)) {
+    console.warn('Invalid container element. Fallback: <body> element.');
+    container = document.body;
+  }
+
   let {
     anchor = getActiveElement(),
     composed = false,
