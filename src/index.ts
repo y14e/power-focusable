@@ -3,7 +3,7 @@
  * High-precision focus management utility with full composed tree support.
  * Handles complex focus rules including tabindex ordering, radio groups, inert.
  *
- * @version 4.1.5
+ * @version 4.1.6
  * @author Yusuke Kamiyamane
  * @license MIT
  * @copyright Copyright (c) Yusuke Kamiyamane
@@ -91,16 +91,20 @@ export function getFocusables(
     container = document.body;
   }
 
-  const { composed = false } = options;
-  let { filter, include } = options;
+  let { composed = false, filter, include } = options;
 
-  if (filter && typeof filter !== 'function') {
-    console.warn('Invalid filter function');
+  if (typeof composed !== 'boolean') {
+    console.warn('Invalid composed. Fallback: false.');
+    composed = false;
+  }
+
+  if (typeof filter !== 'undefined' && typeof filter !== 'function') {
+    console.warn('Invalid filter. Fallback: no filter function (undefined).');
     filter = undefined;
   }
 
-  if (include && typeof include !== 'function') {
-    console.warn('Invalid include function');
+  if (typeof include !== 'undefined' && typeof include !== 'function') {
+    console.warn('Invalid include. Fallback: no include function (undefined).');
     include = undefined;
   }
 
@@ -152,11 +156,6 @@ export function getNextFocusable(
   container: Element = document.body,
   options: PowerFocusableOptions = {},
 ): Element | null {
-  if (!(container instanceof Element)) {
-    console.warn('Invalid container element. Fallback: <body> element.');
-    container = document.body;
-  }
-
   return getRelativeFocusable(container, 1, options);
 }
 
@@ -164,11 +163,6 @@ export function getPreviousFocusable(
   container: Element = document.body,
   options: PowerFocusableOptions = {},
 ): Element | null {
-  if (!(container instanceof Element)) {
-    console.warn('Invalid container element. Fallback: <body> element.');
-    container = document.body;
-  }
-
   return getRelativeFocusable(container, -1, options);
 }
 
@@ -176,11 +170,6 @@ export function hasFocusable(
   container: Element = document.body,
   options: Omit<PowerFocusableOptions, 'anchor' | 'wrap'> = {},
 ): boolean {
-  if (!(container instanceof Element)) {
-    console.warn('Invalid container element. Fallback: <body> element.');
-    container = document.body;
-  }
-
   return !!getFocusables(container, options).length;
 }
 
@@ -267,8 +256,13 @@ function getRelativeFocusable(
   offset: number,
   options: PowerFocusableOptions,
 ): Element | null {
-  let anchor = options.anchor ?? getActiveElement();
-  const { composed = false, filter, include, wrap = false } = options;
+  let {
+    anchor = getActiveElement(),
+    composed = false,
+    filter,
+    include,
+    wrap = false,
+  } = options;
 
   if (!(anchor instanceof Element)) {
     const active = getActiveElement();
@@ -285,6 +279,26 @@ function getRelativeFocusable(
   if (!containsComposed(container, anchor)) {
     console.warn('Anchor (active) element not within container');
     return null;
+  }
+
+  if (typeof composed !== 'boolean') {
+    console.warn('Invalid composed. Fallback: false.');
+    composed = false;
+  }
+
+  if (typeof filter !== 'undefined' && typeof filter !== 'function') {
+    console.warn('Invalid filter. Fallback: no filter function (undefined).');
+    filter = undefined;
+  }
+
+  if (typeof include !== 'undefined' && typeof include !== 'function') {
+    console.warn('Invalid include. Fallback: no include function (undefined).');
+    include = undefined;
+  }
+
+  if (typeof wrap !== 'boolean') {
+    console.warn('Invalid wrap. Fallback: false.');
+    wrap = false;
   }
 
   const focusables = getFocusables(container, { composed, filter, include });
