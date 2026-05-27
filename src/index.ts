@@ -3,7 +3,7 @@
  * High-precision focus management utility with full composed tree support.
  * Handles complex focus rules including tabindex ordering, radio groups, inert.
  *
- * @version 4.1.7
+ * @version 4.1.8
  * @author Yusuke Kamiyamane
  * @license MIT
  * @copyright Copyright (c) Yusuke Kamiyamane
@@ -94,17 +94,21 @@ export function getFocusables(
   let { composed = false, filter, include } = options;
 
   if (typeof composed !== 'boolean') {
-    console.warn('Invalid composed. Fallback: false.');
+    console.warn('Invalid composed option. Fallback: false.');
     composed = false;
   }
 
   if (typeof filter !== 'undefined' && typeof filter !== 'function') {
-    console.warn('Invalid filter. Fallback: no filter function (undefined).');
+    console.warn(
+      'Invalid filter function. Fallback: no filter function (undefined).',
+    );
     filter = undefined;
   }
 
   if (typeof include !== 'undefined' && typeof include !== 'function') {
-    console.warn('Invalid include. Fallback: no include function (undefined).');
+    console.warn(
+      'Invalid include function. Fallback: no include function (undefined).',
+    );
     include = undefined;
   }
 
@@ -287,22 +291,26 @@ function getRelativeFocusable(
   }
 
   if (typeof composed !== 'boolean') {
-    console.warn('Invalid composed. Fallback: false.');
+    console.warn('Invalid composed option. Fallback: false.');
     composed = false;
   }
 
   if (typeof filter !== 'undefined' && typeof filter !== 'function') {
-    console.warn('Invalid filter. Fallback: no filter function (undefined).');
+    console.warn(
+      'Invalid filter function. Fallback: no filter function (undefined).',
+    );
     filter = undefined;
   }
 
   if (typeof include !== 'undefined' && typeof include !== 'function') {
-    console.warn('Invalid include. Fallback: no include function (undefined).');
+    console.warn(
+      'Invalid include function. Fallback: no include function (undefined).',
+    );
     include = undefined;
   }
 
   if (typeof wrap !== 'boolean') {
-    console.warn('Invalid wrap. Fallback: false.');
+    console.warn('Invalid wrap option. Fallback: false.');
     wrap = false;
   }
 

@@ -1,6 +1,6 @@
 {
   "name": "power-focusable",
-  "version": "4.1.7",
+  "version": "4.1.8",
   "description": "High-precision focus management utility with full composed tree support",
   "type": "module",
   "main": "./dist/index.cjs",
