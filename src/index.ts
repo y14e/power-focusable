@@ -3,7 +3,7 @@
  * High-precision focus management utility with full composed tree support.
  * Handles complex focus rules including tabindex ordering, radio groups, inert.
  *
- * @version 4.1.8
+ * @version 4.2.0
  * @author Yusuke Kamiyamane
  * @license MIT
  * @copyright Copyright (c) Yusuke Kamiyamane
@@ -19,6 +19,7 @@ export interface PowerFocusableOptions {
   readonly composed?: boolean;
   readonly filter?: ((element: Element) => boolean) | undefined;
   readonly include?: ((element: Element) => boolean) | undefined;
+  readonly skipVisibilityCheck?: boolean;
   readonly wrap?: boolean;
 }
 
@@ -91,7 +92,12 @@ export function getFocusables(
     container = document.body;
   }
 
-  let { composed = false, filter, include } = options;
+  let {
+    composed = false,
+    filter,
+    include,
+    skipVisibilityCheck = false,
+  } = options;
 
   if (typeof composed !== 'boolean') {
     console.warn('Invalid composed option. Fallback: false.');
@@ -117,7 +123,7 @@ export function getFocusables(
   if (composed || include) {
     function traverse(node: Node): void {
       if (node instanceof Element) {
-        if (isFocusable(node) || include?.(node)) {
+        if (isFocusable(node, { skipVisibilityCheck }) || include?.(node)) {
           elements[elements.length] = node;
         }
       }
@@ -146,7 +152,7 @@ export function getFocusables(
         continue;
       }
 
-      if (isFocusable(candidate)) {
+      if (isFocusable(candidate, { skipVisibilityCheck })) {
         elements[elements.length] = candidate;
       }
     }
@@ -214,10 +220,20 @@ export function inertOutside(element: Element): () => void {
   };
 }
 
-export function isFocusable(element: Element): boolean {
+export function isFocusable(
+  element: Element,
+  options: { skipVisibilityCheck?: boolean } = {},
+): boolean {
   if (!(element instanceof Element)) {
     console.warn('Invalid element');
     return false;
+  }
+
+  let { skipVisibilityCheck = false } = options;
+
+  if (typeof skipVisibilityCheck !== 'boolean') {
+    console.warn('Invalid skipVisibilityCheck option. Fallback: false.');
+    skipVisibilityCheck = false;
   }
 
   // Fast path [hidden], [inert]
@@ -239,6 +255,7 @@ export function isFocusable(element: Element): boolean {
   }
 
   if (
+    !skipVisibilityCheck &&
     !element.checkVisibility({
       contentVisibilityAuto: true,
       opacityProperty: true,
@@ -270,6 +287,7 @@ function getRelativeFocusable(
     composed = false,
     filter,
     include,
+    skipVisibilityCheck = false,
     wrap = false,
   } = options;
 
@@ -309,12 +327,22 @@ function getRelativeFocusable(
     include = undefined;
   }
 
+  if (typeof skipVisibilityCheck !== 'boolean') {
+    console.warn('Invalid skipVisibilityCheck option. Fallback: false.');
+    skipVisibilityCheck = false;
+  }
+
   if (typeof wrap !== 'boolean') {
     console.warn('Invalid wrap option. Fallback: false.');
     wrap = false;
   }
 
-  const focusables = getFocusables(container, { composed, filter, include });
+  const focusables = getFocusables(container, {
+    composed,
+    filter,
+    include,
+    skipVisibilityCheck,
+  });
   const { length } = focusables;
 
   if (!length) {
