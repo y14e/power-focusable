@@ -39,6 +39,7 @@ interface PowerFocusableOptions {
   composed?: boolean;                      // default: false
   filter?: (element: Element) => boolean;
   include?: (element: Element) => boolean;
+  skipVisibilityCheck?: boolean;           // default: false
   wrap?: boolean;                          // default: false
 }
 ```
@@ -70,6 +71,12 @@ Custom include function for adding elements to focus traversal even if they are 
 The function should return `true` to include the element, or `false` to ignore it.
 
 Used by `getFocusables`, `getNextFocusable`, `getPreviousFocusable`, and `hasFocusable`.
+
+### `skipVisibilityCheck`
+
+If `true`, skips `checkVisibility()` when determining focusability. Useful for initializing.
+
+Used by `getFocusables`, `getNextFocusable`, `getPreviousFocusable`, `hasFocusable`, and `isFocusable`.
 
 ### `wrap`
 
