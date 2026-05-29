@@ -135,7 +135,13 @@ export function getFocusables(
   if (composed || include) {
     function traverse(node: Node): void {
       if (node instanceof Element) {
-        if (isFocusable(node, { skipVisibilityCheck }) || include?.(node)) {
+        if (
+          isFocusable(node, {
+            skipNegativeTabIndexCheck,
+            skipVisibilityCheck,
+          }) ||
+          include?.(node)
+        ) {
           elements[elements.length] = node;
         }
       }
