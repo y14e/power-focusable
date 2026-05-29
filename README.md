@@ -39,6 +39,7 @@ interface PowerFocusableOptions {
   composed?: boolean;                      // default: false
   filter?: (element: Element) => boolean;
   include?: (element: Element) => boolean;
+  skipNegativeTabIndexCheck?: boolean;     // default: false
   skipVisibilityCheck?: boolean;           // default: false
   wrap?: boolean;                          // default: false
 }
@@ -72,9 +73,15 @@ The function should return `true` to include the element, or `false` to ignore i
 
 Used by `getFocusables`, `getNextFocusable`, `getPreviousFocusable`, and `hasFocusable`.
 
+### `skipNegativeTabIndexCheck`
+
+If `true`, skips the negative `tabindex` check when determining focusability.
+
+Used by `getFocusables`, `getNextFocusable`, `getPreviousFocusable`, `hasFocusable`, and `isFocusable`.
+
 ### `skipVisibilityCheck`
 
-If `true`, skips `checkVisibility()` when determining focusability. Useful for initializing.
+If `true`, skips `checkVisibility()` when determining focusability.
 
 Used by `getFocusables`, `getNextFocusable`, `getPreviousFocusable`, `hasFocusable`, and `isFocusable`.
 
@@ -114,7 +121,7 @@ getFocusables(container, { composed: true });
 getFocusables(container, { filter: (element) => !element.matches('[data-skip-focus]') });
 
 // Uses custom include function
-getFocusables(container, { filter: (element) => element.matches('[data-roving-tabindex]') });
+getFocusables(container, { filter: (element) => element.matches('[data-force-focusable]') });
 ```
 
 ### `getNextFocusable`
@@ -137,7 +144,7 @@ getNextFocusable(container, { composed: true });
 getNextFocusable(container, { filter: (element) => !element.matches('[data-skip-focus]') });
 
 // Uses custom include function
-getNextFocusable(container, { filter: (element) => element.matches('[data-roving-tabindex]') });
+getNextFocusable(container, { filter: (element) => element.matches('[data-force-focusable]') });
 
 // Wraps around to the first element when reaching the end
 getNextFocusable(container, { wrap: true });
@@ -163,7 +170,7 @@ getPreviousFocusable(container, { composed: true });
 getPreviousFocusable(container, { filter: (element) => !element.matches('[data-skip-focus]') });
 
 // Uses custom include function
-getPreviousFocusable(container, { filter: (element) => element.matches('[data-roving-tabindex]') });
+getPreviousFocusable(container, { filter: (element) => element.matches('[data-force-focusable]') });
 
 // Wraps around to the last element when reaching the end
 getPreviousFocusable(container, { wrap: true });
@@ -187,7 +194,7 @@ hasFocusable(container, { composed: true });
 hasFocusable(container, { filter: (element) => !element.matches('[data-skip-focus]') });
 
 // Uses custom include function
-hasFocusable(container, { filter: (element) => element.matches('[data-roving-tabindex]') });
+hasFocusable(container, { filter: (element) => element.matches('[data-force-focusable]') });
 ```
 
 ### `inertOutside`
