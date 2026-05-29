@@ -39,6 +39,7 @@ interface PowerFocusableOptions {
   composed?: boolean;                      // default: false
   filter?: (element: Element) => boolean;
   include?: (element: Element) => boolean;
+  skipNegativeTabIndexCheck?: boolean;     // default: false
   skipVisibilityCheck?: boolean;           // default: false
   wrap?: boolean;                          // default: false
 }
@@ -72,9 +73,15 @@ The function should return `true` to include the element, or `false` to ignore i
 
 Used by `getFocusables`, `getNextFocusable`, `getPreviousFocusable`, and `hasFocusable`.
 
+### `skipNegativeTabIndexCheck`
+
+If `true`, skips the negative `tabindex` check when determining focusability.
+
+Used by `getFocusables`, `getNextFocusable`, `getPreviousFocusable`, `hasFocusable`, and `isFocusable`.
+
 ### `skipVisibilityCheck`
 
-If `true`, skips `checkVisibility()` when determining focusability. Useful for initializing.
+If `true`, skips `checkVisibility()` when determining focusability.
 
 Used by `getFocusables`, `getNextFocusable`, `getPreviousFocusable`, `hasFocusable`, and `isFocusable`.
 
