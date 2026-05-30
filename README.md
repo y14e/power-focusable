@@ -21,14 +21,14 @@ import {
   hasFocusable,
   inertOutside,
   isFocusable,
-} from 'power-focusable';
+} from 'power-focusable@4.3.1';
 
 // CDNs
-import { ... } 'https://esm.sh/power-focusable'
+import { ... } 'https://esm.sh/power-focusable@4.3.1';
 // or
-import { ... } 'https://cdn.jsdelivr.net/npm/power-focusable/+esm';
+import { ... } 'https://cdn.jsdelivr.net/npm/power-focusable@4.3.1/+esm';
 // or
-import { ... } 'https://unpkg.com/power-focusable/dist/index.js';
+import { ... } 'https://esm.unpkg.com/power-focusable@4.3.1';
 ```
 
 ## 🪄 Options
