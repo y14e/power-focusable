@@ -3,7 +3,7 @@
  * High-precision focus management utility with full composed tree support.
  * Handles complex focus rules including tabindex ordering, radio groups, inert.
  *
- * @version 4.3.1
+ * @version 4.3.2
  * @author Yusuke Kamiyamane
  * @license MIT
  * @copyright Copyright (c) Yusuke Kamiyamane
@@ -38,7 +38,7 @@ export function createFocusTrap(
   container: Element = document.body,
 ): () => void {
   if (!(container instanceof Element)) {
-    throw new Error('Invalid container element');
+    throw new TypeError('Invalid container element');
   }
 
   focusElement(container);
