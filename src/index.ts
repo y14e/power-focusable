@@ -3,7 +3,7 @@
  * High-precision focus management utility with full composed tree support.
  * Handles complex focus rules including tabindex ordering, radio groups, inert.
  *
- * @version 4.3.2
+ * @version 4.3.3
  * @author Yusuke Kamiyamane
  * @license MIT
  * @copyright Copyright (c) Yusuke Kamiyamane
@@ -49,13 +49,13 @@ export function createFocusTrap(
   }
 
   function onKeyDown(event: KeyboardEvent): void {
-    const { key, altKey, ctrlKey, metaKey, shiftKey } = event;
-
-    if (key !== 'Tab' || altKey || ctrlKey || metaKey) {
+    if (!event.composedPath().includes(container)) {
       return;
     }
 
-    if (!event.composedPath().includes(container)) {
+    const { key, altKey, ctrlKey, metaKey, shiftKey } = event;
+
+    if (key !== 'Tab' || altKey || ctrlKey || metaKey) {
       return;
     }
 
@@ -64,12 +64,10 @@ export function createFocusTrap(
       wrap: true,
     });
 
-    if (!focusable) {
-      return;
+    if (focusable) {
+      event.preventDefault();
+      focusElement(focusable);
     }
-
-    event.preventDefault();
-    focusElement(focusable);
   }
 
   let controller: AbortController | null = new AbortController();
@@ -134,28 +132,22 @@ export function getFocusables(
 
   if (composed || include) {
     function traverse(node: Node): void {
-      if (node instanceof Element) {
-        if (
-          isFocusable(node, {
-            skipNegativeTabIndexCheck,
-            skipVisibilityCheck,
-          }) ||
-          include?.(node)
-        ) {
-          elements[elements.length] = node;
-        }
+      if (!(node instanceof Element)) {
+        return;
+      }
+
+      if (
+        isFocusable(node, { skipNegativeTabIndexCheck, skipVisibilityCheck }) ||
+        include?.(node)
+      ) {
+        elements[elements.length] = node;
       }
 
       const children = getComposedChildren(node);
 
       for (let i = 0, l = children.length; i < l; i++) {
         const child = children[i];
-
-        if (!child) {
-          continue;
-        }
-
-        traverse(child);
+        child && traverse(child);
       }
     }
 
@@ -166,11 +158,8 @@ export function getFocusables(
     for (let i = 0, l = candidates.length; i < l; i++) {
       const candidate = candidates[i];
 
-      if (!(candidate instanceof Element)) {
-        continue;
-      }
-
       if (
+        candidate &&
         isFocusable(candidate, {
           skipNegativeTabIndexCheck,
           skipVisibilityCheck,
@@ -215,26 +204,17 @@ export function inertOutside(element: Element): () => void {
   function traverse(node: Element, callback: (_: Element) => void): void {
     const parent = getComposedParent(node);
 
-    if (!parent) {
-      return;
-    }
+    if (parent) {
+      for (const sibling of getComposedSiblings(node)) {
+        callback(sibling);
+      }
 
-    for (const sibling of getComposedSiblings(node)) {
-      callback(sibling);
+      traverse(parent, callback);
     }
-
-    traverse(parent, callback);
   }
 
   const elements: Element[] = [];
-
-  traverse(element, (node) => {
-    if (!(node instanceof Element)) {
-      return;
-    }
-
-    applyInert(node) && elements.push(node);
-  });
+  traverse(element, (node) => node && applyInert(node) && elements.push(node));
 
   return () => {
     elements.forEach((element) => {
@@ -498,13 +478,9 @@ function normalizeRadioGroup(elements: Element[]): Element[] {
     placeholder.add(group.find((radio) => radio.checked) ?? group[0]);
   }
 
-  return elements.filter((element) => {
-    if (isUngroupedRadio(element)) {
-      return placeholder.has(element);
-    }
-
-    return true;
-  });
+  return elements.filter((element) =>
+    isUngroupedRadio(element) ? placeholder.has(element) : true,
+  );
 }
 
 function sortByTabIndex(elements: Element[]): Element[] {
@@ -514,12 +490,10 @@ function sortByTabIndex(elements: Element[]): Element[] {
   for (let i = 0, l = elements.length; i < l; i++) {
     const element = elements[i];
 
-    if (!element) {
-      continue;
+    if (element) {
+      const target = getTabIndex(element) > 0 ? ordered : natural;
+      target[target.length] = element;
     }
-
-    const target = getTabIndex(element) > 0 ? ordered : natural;
-    target[target.length] = element;
   }
 
   ordered.sort((a, b) => getTabIndex(a) - getTabIndex(b));
@@ -547,14 +521,14 @@ function containsComposed(container: Node, element: Node): boolean {
   while (current) {
     if (current === container) {
       return true;
+    } else {
+      current =
+        current instanceof ShadowRoot
+          ? current.mode === 'open'
+            ? current.host
+            : null
+          : current.parentNode;
     }
-
-    current =
-      current instanceof ShadowRoot
-        ? current.mode === 'open'
-          ? current.host
-          : null
-        : current.parentNode;
   }
 
   return false;
@@ -587,15 +561,14 @@ function getComposedChildren(node: Node): Element[] {
 function getComposedParent(node: Node): Element | null {
   if (node instanceof Element && node.assignedSlot) {
     return node.assignedSlot;
+  } else {
+    const parent = node.parentNode;
+    return parent instanceof ShadowRoot
+      ? parent.host
+      : parent instanceof Element
+        ? parent
+        : null;
   }
-
-  const parent = node.parentNode;
-
-  if (parent instanceof ShadowRoot) {
-    return parent.host as Element;
-  }
-
-  return parent instanceof Element ? parent : null;
 }
 
 function getComposedSiblings(node: Element): Element[] {
@@ -606,25 +579,15 @@ function getComposedSiblings(node: Element): Element[] {
     for (let i = 0, l = siblings.length; i < l; i++) {
       const sibling = siblings[i];
 
-      if (sibling !== node) {
-        if (!(sibling instanceof Element)) {
-          continue;
-        }
-
+      if (sibling && sibling !== node) {
         filtered[filtered.length] = sibling;
       }
     }
 
     return filtered;
+  } else {
+    return getComposedParent(node) ? getSiblings(node) : [];
   }
-
-  const parent = getComposedParent(node);
-
-  if (!parent) {
-    return [];
-  }
-
-  return getSiblings(node);
 }
 
 // -----------------------------------------------------------------------------
@@ -634,14 +597,14 @@ function getComposedSiblings(node: Element): Element[] {
 const inertRefCounts = new WeakMap<Element, number>();
 
 function applyInert(element: Element): boolean {
-  if (isInert(element) && !inertRefCounts.has(element)) {
+  if (!isInert(element) || inertRefCounts.has(element)) {
+    const count = inertRefCounts.get(element) ?? 0;
+    inertRefCounts.set(element, count + 1);
+    count === 0 && element.setAttribute('inert', '');
+    return true;
+  } else {
     return false;
   }
-
-  const count = inertRefCounts.get(element) ?? 0;
-  inertRefCounts.set(element, count + 1);
-  count === 0 && element.setAttribute('inert', '');
-  return true;
 }
 
 function restoreInert(element: Element): void {
@@ -654,10 +617,9 @@ function restoreInert(element: Element): void {
   if (count === 1) {
     inertRefCounts.delete(element);
     element.removeAttribute('inert');
-    return;
+  } else {
+    inertRefCounts.set(element, count - 1);
   }
-
-  inertRefCounts.set(element, count - 1);
 }
 
 // -----------------------------------------------------------------------------
