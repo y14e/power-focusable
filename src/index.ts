@@ -626,11 +626,11 @@ function restoreInert(element: Element): void {
 // Utils
 // -----------------------------------------------------------------------------
 
-function focusElement(element: Element): void {
+export function focusElement(element: Element): void {
   'focus' in element && typeof element.focus === 'function' && element.focus();
 }
 
-function getActiveElement(): Element | null {
+export function getActiveElement(): Element | null {
   let current = document.activeElement;
 
   while (current?.shadowRoot?.activeElement) {
