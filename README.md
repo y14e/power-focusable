@@ -35,13 +35,13 @@ import { ... } 'https://esm.unpkg.com/power-focusable@4.3.4';
 
 ```ts
 interface PowerFocusableOptions {
-  anchor?: Element | null;                 // default: active element
-  composed?: boolean;                      // default: false
+  anchor?: Element | null;             // default: active element
+  composed?: boolean;                  // default: false
   filter?: (element: Element) => boolean;
   include?: (element: Element) => boolean;
-  skipNegativeTabIndexCheck?: boolean;     // default: false
-  skipVisibilityCheck?: boolean;           // default: false
-  wrap?: boolean;                          // default: false
+  skipNegativeTabIndexCheck?: boolean; // default: false
+  skipVisibilityCheck?: boolean;       // default: false
+  wrap?: boolean;                      // default: false
 }
 ```
 
