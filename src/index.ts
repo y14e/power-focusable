@@ -3,7 +3,7 @@
  * High-precision focus management utility with full composed tree support.
  * Handles complex focus rules including tabindex ordering, radio groups, inert.
  *
- * @version 4.3.3
+ * @version 4.3.5
  * @author Yusuke Kamiyamane
  * @license MIT
  * @copyright Copyright (c) Yusuke Kamiyamane
@@ -72,7 +72,6 @@ export function createFocusTrap(
 
   let controller: AbortController | null = new AbortController();
   document.addEventListener('keydown', onKeyDown, {
-    capture: true,
     signal: controller.signal,
   });
 
