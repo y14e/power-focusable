@@ -3,7 +3,7 @@
  * High-precision focus management utility with full composed tree support.
  * Handles complex focus rules including tabindex ordering, radio groups, inert.
  *
- * @version 4.3.7
+ * @version 4.3.8
  * @author Yusuke Kamiyamane
  * @license MIT
  * @copyright Copyright (c) Yusuke Kamiyamane
@@ -68,15 +68,9 @@ class FocusTrap {
 
   #initialize(): void {
     this.#controller = new AbortController();
-
-    if (!(this.#container instanceof HTMLElement)) {
-      return;
-    }
-
     this.#container.addEventListener('keydown', this.#onKeyDown, {
       signal: this.#controller.signal,
     });
-
     focusElement(this.#container);
 
     if (getActiveElement() !== this.#container) {
@@ -85,7 +79,11 @@ class FocusTrap {
     }
   }
 
-  #onKeyDown = (event: KeyboardEvent): void => {
+  #onKeyDown = (event: Event): void => {
+    if (!(event instanceof KeyboardEvent)) {
+      return;
+    }
+
     const { key, altKey, ctrlKey, metaKey, shiftKey } = event;
 
     if (key !== 'Tab' || altKey || ctrlKey || metaKey) {
