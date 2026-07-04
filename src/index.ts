@@ -3,7 +3,7 @@
  * High-precision focus management utility with full composed tree support.
  * Handles complex focus rules including tabindex ordering, radio groups, inert.
  *
- * @version 4.3.6
+ * @version 4.3.7
  * @author Yusuke Kamiyamane
  * @license MIT
  * @copyright Copyright (c) Yusuke Kamiyamane
@@ -38,28 +38,61 @@ export function createFocusTrap(
   container: Element = document.body,
 ): () => void {
   if (!(container instanceof Element)) {
-    throw new TypeError('Invalid container element');
+    console.warn('Invalid container element');
+    return () => {};
   }
 
-  focusElement(container);
+  const trap = new FocusTrap(container);
+  return () => trap.destroy();
+}
 
-  if (getActiveElement() !== container) {
-    const first = getFocusables(container, { composed: true })[0];
-    first && focusElement(first);
+class FocusTrap {
+  #container: Element;
+  #controller: AbortController | null = null;
+  #isDestroyed = false;
+
+  constructor(container: Element) {
+    this.#container = container;
+    this.#initialize();
   }
 
-  function onKeyDown(event: KeyboardEvent): void {
-    if (!event.composedPath().includes(container)) {
+  destroy(): void {
+    if (this.#isDestroyed) {
       return;
     }
 
+    this.#isDestroyed = true;
+    this.#controller?.abort();
+    this.#controller = null;
+  }
+
+  #initialize(): void {
+    this.#controller = new AbortController();
+
+    if (!(this.#container instanceof HTMLElement)) {
+      return;
+    }
+
+    this.#container.addEventListener('keydown', this.#onKeyDown, {
+      signal: this.#controller.signal,
+    });
+
+    focusElement(this.#container);
+
+    if (getActiveElement() !== this.#container) {
+      const first = getFocusables(this.#container, { composed: true })[0];
+      first && focusElement(first);
+    }
+  }
+
+  #onKeyDown = (event: KeyboardEvent): void => {
     const { key, altKey, ctrlKey, metaKey, shiftKey } = event;
 
     if (key !== 'Tab' || altKey || ctrlKey || metaKey) {
       return;
     }
 
-    const focusable = getRelativeFocusable(container, shiftKey ? -1 : 1, {
+    const focusable = getRelativeFocusable(this.#container, shiftKey ? -1 : 1, {
       composed: true,
       wrap: true,
     });
@@ -68,16 +101,6 @@ export function createFocusTrap(
       event.preventDefault();
       focusElement(focusable);
     }
-  }
-
-  let controller: AbortController | null = new AbortController();
-  document.addEventListener('keydown', onKeyDown, {
-    signal: controller.signal,
-  });
-
-  return () => {
-    controller?.abort();
-    controller = null;
   };
 }
 
