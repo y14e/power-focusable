@@ -24,24 +24,24 @@ import {
 } from 'power-focusable';
 
 // CDNs
-import { ... } 'https://esm.sh/power-focusable@4.3.8';
+import { ... } 'https://esm.sh/power-focusable@4.3.9';
 // or
-import { ... } 'https://cdn.jsdelivr.net/npm/power-focusable@4.3.8/+esm';
+import { ... } 'https://cdn.jsdelivr.net/npm/power-focusable@4.3.9/+esm';
 // or
-import { ... } 'https://esm.unpkg.com/power-focusable@4.3.8';
+import { ... } 'https://esm.unpkg.com/power-focusable@4.3.9';
 ```
 
 ## 🪄 Options
 
 ```ts
 interface PowerFocusableOptions {
-  anchor?: Element | null;             // default: active element
-  composed?: boolean;                  // default: false
-  filter?: (element: Element) => boolean;
-  include?: (element: Element) => boolean;
-  skipNegativeTabIndexCheck?: boolean; // default: false
-  skipVisibilityCheck?: boolean;       // default: false
-  wrap?: boolean;                      // default: false
+  anchor: Element | null;             // default: active element
+  composed: boolean;                  // default: false
+  filter: (element: Element) => boolean;
+  include: (element: Element) => boolean;
+  skipNegativeTabIndexCheck: boolean; // default: false
+  skipVisibilityCheck: boolean;       // default: false
+  wrap: boolean;                      // default: false
 }
 ```
 

@@ -3,7 +3,7 @@
  * High-precision focus management utility with full composed tree support.
  * Handles complex focus rules including tabindex ordering, radio groups, inert.
  *
- * @version 4.3.8
+ * @version 4.3.9
  * @author Yusuke Kamiyamane
  * @license MIT
  * @copyright Copyright (c) Yusuke Kamiyamane
@@ -15,13 +15,13 @@
 // -----------------------------------------------------------------------------
 
 export interface PowerFocusableOptions {
-  readonly anchor?: Element | null;
-  readonly composed?: boolean;
-  readonly filter?: (element: Element) => boolean;
-  readonly include?: (element: Element) => boolean;
-  readonly skipNegativeTabIndexCheck?: boolean;
-  readonly skipVisibilityCheck?: boolean;
-  readonly wrap?: boolean;
+  anchor: Element | null;
+  composed: boolean;
+  filter: (element: Element) => boolean;
+  include: (element: Element) => boolean;
+  skipNegativeTabIndexCheck: boolean;
+  skipVisibilityCheck: boolean;
+  wrap: boolean;
 }
 
 // -----------------------------------------------------------------------------
@@ -104,7 +104,7 @@ class FocusTrap {
 
 export function getFocusables(
   container: Element = document.body,
-  options: Omit<PowerFocusableOptions, 'anchor' | 'wrap'> = {},
+  options: Partial<Omit<PowerFocusableOptions, 'anchor' | 'wrap'>> = {},
 ): Element[] {
   if (!(container instanceof Element)) {
     console.warn('Invalid container element. Fallback: <body> element.');
@@ -196,21 +196,21 @@ export function getFocusables(
 
 export function getNextFocusable(
   container: Element = document.body,
-  options: PowerFocusableOptions = {},
+  options: Partial<PowerFocusableOptions> = {},
 ): Element | null {
   return getRelativeFocusable(container, 1, options);
 }
 
 export function getPreviousFocusable(
   container: Element = document.body,
-  options: PowerFocusableOptions = {},
+  options: Partial<PowerFocusableOptions> = {},
 ): Element | null {
   return getRelativeFocusable(container, -1, options);
 }
 
 export function hasFocusable(
   container: Element = document.body,
-  options: Omit<PowerFocusableOptions, 'anchor' | 'wrap'> = {},
+  options: Partial<Omit<PowerFocusableOptions, 'anchor' | 'wrap'>> = {},
 ): boolean {
   return !!getFocusables(container, options).length;
 }
@@ -313,7 +313,7 @@ export function isFocusable(
 function getRelativeFocusable(
   container: Element,
   offset: number,
-  options: PowerFocusableOptions,
+  options: Partial<PowerFocusableOptions>,
 ): Element | null {
   if (!(container instanceof Element)) {
     console.warn('Invalid container element. Fallback: <body> element.');
