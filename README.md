@@ -35,7 +35,7 @@ import { ... } 'https://esm.unpkg.com/power-focusable@4.3.11';
 
 ```ts
 interface PowerFocusableOptions {
-  anchor: Element | null;             // default: DocumentOrShadowRoot activeElement
+  anchor: Element | null;             // default: DocumentOrShadowRoot.activeElement
   composed: boolean;                  // default: false
   filter: PowerFocusableFunction;     // default: undefined
   include: PowerFocusableFunction;    // default: undefined
