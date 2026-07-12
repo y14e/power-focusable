@@ -37,12 +37,14 @@ import { ... } 'https://esm.unpkg.com/power-focusable@4.3.11';
 interface PowerFocusableOptions {
   anchor: Element | null;             // default: DocumentOrShadowRoot activeElement
   composed: boolean;                  // default: false
-  filter: ((element: Element) => boolean) | undefined;
-  include: ((element: Element) => boolean) | undefined;
+  filter: PowerFocusableFunction;     // default: undefined
+  include: PowerFocusableFunction;    // default: undefined
   skipNegativeTabIndexCheck: boolean; // default: false
   skipVisibilityCheck: boolean;       // default: false
   wrap: boolean;                      // default: false
 }
+
+type PowerFocusableFunction = ((element: Element) => boolean) | undefined;
 ```
 
 ### `anchor`

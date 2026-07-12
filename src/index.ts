@@ -17,12 +17,14 @@
 export interface PowerFocusableOptions {
   anchor: Element | null;
   composed: boolean;
-  filter: ((element: Element) => boolean) | undefined;
-  include: ((element: Element) => boolean) | undefined;
+  filter: PowerFocusableFunction;
+  include: PowerFocusableFunction;
   skipNegativeTabIndexCheck: boolean;
   skipVisibilityCheck: boolean;
   wrap: boolean;
 }
+
+type PowerFocusableFunction = ((element: Element) => boolean) | undefined;
 
 // -----------------------------------------------------------------------------
 // Constants
