@@ -24,21 +24,21 @@ import {
 } from 'power-focusable';
 
 // CDNs
-import { ... } 'https://esm.sh/power-focusable@4.3.10';
+import { ... } 'https://esm.sh/power-focusable@4.3.11';
 // or
-import { ... } 'https://cdn.jsdelivr.net/npm/power-focusable@4.3.10/+esm';
+import { ... } 'https://cdn.jsdelivr.net/npm/power-focusable@4.3.11/+esm';
 // or
-import { ... } 'https://esm.unpkg.com/power-focusable@4.3.10';
+import { ... } 'https://esm.unpkg.com/power-focusable@4.3.11';
 ```
 
 ## 🪄 Options
 
 ```ts
 interface PowerFocusableOptions {
-  anchor: Element | null;             // default: active element
+  anchor: Element | null;             // default: DocumentOrShadowRoot activeElement
   composed: boolean;                  // default: false
-  filter: (element: Element) => boolean;
-  include: (element: Element) => boolean;
+  filter: ((element: Element) => boolean) | undefined;
+  include: ((element: Element) => boolean) | undefined;
   skipNegativeTabIndexCheck: boolean; // default: false
   skipVisibilityCheck: boolean;       // default: false
   wrap: boolean;                      // default: false
