@@ -352,11 +352,12 @@ describe('Full Integration Test', () => {
       />
     `;
 
-    const ids = getFocusables(document.body).map((el) => el.id);
+    const ids = getFocusables(document.body, {
+      composed: true,
+      skipNegativeTabIndexCheck: true,
+    }).map((element) => element.id);
 
-    expect(ids).toContain('radio-b');
-
-    expect(ids).not.toContain('radio-a');
+    expect(ids).toEqual(['radio-b']);
   });
 
   //
