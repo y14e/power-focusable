@@ -3,7 +3,7 @@
  * High-precision focus management utility with full composed tree support.
  * Handles complex focus rules including tabindex ordering, radio groups, inert.
  *
- * @version 4.3.12
+ * @version 4.3.13
  * @author Yusuke Kamiyamane
  * @license MIT
  * @copyright Copyright (c) Yusuke Kamiyamane
@@ -476,7 +476,7 @@ function isDisabledDeep(element: Element): boolean {
 }
 
 function normalizeRadioGroup(elements: Element[]): Element[] {
-  let rootMap: Map<
+  let map: Map<
     Node,
     Map<HTMLFormElement | null, Map<string, HTMLInputElement[]>>
   > | null = null;
@@ -492,44 +492,44 @@ function normalizeRadioGroup(elements: Element[]): Element[] {
       continue;
     }
 
-    if (!rootMap) {
-      rootMap = new Map();
+    if (!map) {
+      map = new Map();
     }
 
     const root = element.getRootNode();
-    let formMap = rootMap.get(root);
+    let forms = map.get(root);
 
-    if (!formMap) {
-      formMap = new Map();
-      rootMap.set(root, formMap);
+    if (!forms) {
+      forms = new Map();
+      map.set(root, forms);
     }
 
-    let nameMap = formMap.get(element.form);
+    let groups = forms.get(element.form);
 
-    if (!nameMap) {
-      nameMap = new Map();
-      formMap.set(element.form, nameMap);
+    if (!groups) {
+      groups = new Map();
+      forms.set(element.form, groups);
     }
 
-    let group = nameMap.get(element.name);
+    let group = groups.get(element.name);
 
     if (!group) {
       group = [];
-      nameMap.set(element.name, group);
+      groups.set(element.name, group);
     }
 
     group[group.length] = element;
   }
 
-  if (!rootMap) {
+  if (!map) {
     return elements;
   }
 
   const placeholder = new Set<HTMLInputElement>();
 
-  for (const formMap of rootMap.values()) {
-    for (const nameMap of formMap.values()) {
-      for (const group of nameMap.values()) {
+  for (const forms of map.values()) {
+    for (const groups of forms.values()) {
+      for (const group of groups.values()) {
         const radio = group.find((element) => element.checked) ?? group[0];
         radio && placeholder.add(radio);
       }
