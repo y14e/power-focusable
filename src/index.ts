@@ -3,7 +3,7 @@
  * High-precision focus management utility with full composed tree support.
  * Handles complex focus rules including tabindex ordering, radio groups, inert.
  *
- * @version 4.3.14
+ * @version 4.3.15
  * @author Yusuke Kamiyamane
  * @license MIT
  * @copyright Copyright (c) Yusuke Kamiyamane
@@ -497,28 +497,28 @@ function normalizeRadioGroup(elements: Element[]): Element[] {
     }
 
     const root = element.getRootNode();
-    let m = map.get(root);
+    let value = map.get(root);
 
-    if (!m) {
-      m = new Map();
-      map.set(root, m);
+    if (!value) {
+      value = new Map();
+      map.set(root, value);
     }
 
-    let n = m.get(element.form);
+    let v = value.get(element.form);
 
-    if (!n) {
-      n = new Map();
-      m.set(element.form, n);
+    if (!v) {
+      v = new Map();
+      value.set(element.form, v);
     }
 
-    let o = n.get(element.name);
+    let vv = v.get(element.name);
 
-    if (!o) {
-      o = [];
-      n.set(element.name, o);
+    if (!vv) {
+      vv = [];
+      v.set(element.name, vv);
     }
 
-    o[o.length] = element;
+    vv[vv.length] = element;
   }
 
   if (!map) {
@@ -527,10 +527,10 @@ function normalizeRadioGroup(elements: Element[]): Element[] {
 
   const placeholder = new Set<HTMLInputElement>();
 
-  for (const m of map.values()) {
-    for (const n of m.values()) {
-      for (const o of n.values()) {
-        const radio = o.find((element) => element.checked) ?? o[0];
+  for (const value of map.values()) {
+    for (const v of value.values()) {
+      for (const vv of v.values()) {
+        const radio = vv.find((element) => element.checked) ?? vv[0];
         radio && placeholder.add(radio);
       }
     }
