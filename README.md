@@ -24,11 +24,11 @@ import {
 } from 'power-focusable';
 
 // CDNs
-import { ... } 'https://esm.sh/power-focusable@4.3.15';
+import { ... } 'https://esm.sh/power-focusable@4.3.16';
 // or
-import { ... } 'https://cdn.jsdelivr.net/npm/power-focusable@4.3.15/+esm';
+import { ... } 'https://cdn.jsdelivr.net/npm/power-focusable@4.3.16/+esm';
 // or
-import { ... } 'https://esm.unpkg.com/power-focusable@4.3.15';
+import { ... } 'https://esm.unpkg.com/power-focusable@4.3.16';
 ```
 
 ## 🪄 Options
@@ -121,9 +121,6 @@ getFocusables(container, { composed: true });
 
 // Uses custom filter function
 getFocusables(container, { filter: (element) => !element.matches('[data-skip-focus]') });
-
-// Uses custom include function
-getFocusables(container, { filter: (element) => element.matches('[data-force-focusable]') });
 ```
 
 ### `getNextFocusable`
@@ -144,9 +141,6 @@ getNextFocusable(container, { composed: true });
 
 // Uses custom filter function
 getNextFocusable(container, { filter: (element) => !element.matches('[data-skip-focus]') });
-
-// Uses custom include function
-getNextFocusable(container, { filter: (element) => element.matches('[data-force-focusable]') });
 
 // Wraps around to the first element when reaching the end
 getNextFocusable(container, { wrap: true });
@@ -171,9 +165,6 @@ getPreviousFocusable(container, { composed: true });
 // Uses custom filter function
 getPreviousFocusable(container, { filter: (element) => !element.matches('[data-skip-focus]') });
 
-// Uses custom include function
-getPreviousFocusable(container, { filter: (element) => element.matches('[data-force-focusable]') });
-
 // Wraps around to the last element when reaching the end
 getPreviousFocusable(container, { wrap: true });
 
@@ -194,9 +185,6 @@ hasFocusable(container, { composed: true });
 
 // Uses custom filter function
 hasFocusable(container, { filter: (element) => !element.matches('[data-skip-focus]') });
-
-// Uses custom include function
-hasFocusable(container, { filter: (element) => element.matches('[data-force-focusable]') });
 ```
 
 ### `inertOutside`
