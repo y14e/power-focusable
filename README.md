@@ -24,11 +24,11 @@ import {
 } from 'power-focusable';
 
 // CDNs
-import { ... } 'https://esm.sh/power-focusable@4.3.18';
+import { ... } 'https://esm.sh/power-focusable@4.3.19';
 // or
-import { ... } 'https://cdn.jsdelivr.net/npm/power-focusable@4.3.18/+esm';
+import { ... } 'https://cdn.jsdelivr.net/npm/power-focusable@4.3.19/+esm';
 // or
-import { ... } 'https://esm.unpkg.com/power-focusable@4.3.18';
+import { ... } 'https://esm.unpkg.com/power-focusable@4.3.19';
 ```
 
 ## 🪄 Options
