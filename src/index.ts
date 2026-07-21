@@ -3,7 +3,7 @@
  * High-precision focus management utility with full composed tree support.
  * Handles complex focus rules including tabindex ordering, radio groups, inert.
  *
- * @version 4.3.20
+ * @version 4.3.21
  * @author Yusuke Kamiyamane
  * @license MIT
  * @copyright Copyright (c) Yusuke Kamiyamane
@@ -154,7 +154,7 @@ export function getFocusables(
     skipVisibilityCheck = false;
   }
 
-  const elements: Element[] = [];
+  const candidates: Element[] = [];
 
   if (composed || include) {
     function traverse(node: Element): void {
@@ -165,7 +165,7 @@ export function getFocusables(
         }) ||
         include?.(node)
       ) {
-        elements[elements.length] = node;
+        candidates[candidates.length] = node;
       }
 
       const children = composed ? getComposedChildren(node) : getChildren(node);
@@ -185,29 +185,30 @@ export function getFocusables(
       child && traverse(child);
     }
   } else {
-    const candidates = container.querySelectorAll(
+    const matches = container.querySelectorAll(
       skipNegativeTabIndexCheck
         ? FOCUSABLE_SELECTOR_WITH_NEGATIVE_TABINDEX
         : FOCUSABLE_SELECTOR,
     );
 
-    for (let i = 0, l = candidates.length; i < l; i++) {
-      const candidate = candidates[i];
+    for (let i = 0, l = matches.length; i < l; i++) {
+      const matched = matches[i];
 
       if (
-        candidate &&
-        isFocusable(candidate, {
+        matched &&
+        isFocusable(matched, {
           skipNegativeTabIndexCheck,
           skipVisibilityCheck,
         })
       ) {
-        elements[elements.length] = candidate;
+        candidates[candidates.length] = matched;
       }
     }
   }
 
-  const filtered = filter ? elements.filter(filter) : elements;
-  return normalizeRadioGroup(sortByTabIndex(filtered));
+  return normalizeRadioGroup(
+    sortByTabIndex(filter ? candidates.filter(filter) : candidates),
+  );
 }
 
 export function getNextFocusable(
@@ -411,13 +412,13 @@ function getRelativeFocusable(
     return null;
   }
 
-  const currentIndex = focusables.indexOf(anchor);
+  const anchorIndex = focusables.indexOf(anchor);
 
-  if (currentIndex === -1) {
+  if (anchorIndex === -1) {
     return null;
   }
 
-  const offsetIndex = currentIndex + offset;
+  const offsetIndex = anchorIndex + offset;
 
   if ((offsetIndex < 0 || offsetIndex >= length) && !wrap) {
     return null;
