@@ -3,7 +3,7 @@
  * High-precision focus management utility with full composed tree support.
  * Handles complex focus rules including tabindex ordering, radio groups, inert.
  *
- * @version 4.3.16
+ * @version 4.3.17
  * @author Yusuke Kamiyamane
  * @license MIT
  * @copyright Copyright (c) Yusuke Kamiyamane
@@ -404,26 +404,26 @@ function getRelativeFocusable(
     skipNegativeTabIndexCheck,
     skipVisibilityCheck,
   };
-  const focusables = getFocusables(container, settings);
-  const { length } = focusables;
+  const candidates = getFocusables(container, settings);
+  const { length } = candidates;
 
   if (!length) {
     return null;
   }
 
-  const currentIndex = focusables.indexOf(anchor);
+  const foundIndex = candidates.indexOf(anchor);
 
-  if (currentIndex === -1) {
+  if (foundIndex === -1) {
     return null;
   }
 
-  const offsetIndex = currentIndex + offset;
+  const offsetIndex = foundIndex + offset;
 
   if ((offsetIndex < 0 || offsetIndex >= length) && !wrap) {
     return null;
   }
 
-  return focusables[(offsetIndex + length) % length] ?? null;
+  return candidates[(offsetIndex + length) % length] ?? null;
 }
 
 function isDisabledDeep(element: Element): boolean {
