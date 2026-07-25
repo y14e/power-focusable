@@ -3,7 +3,7 @@
  * High-precision focus management utility with full composed tree support.
  * Handles complex focus rules including tabindex ordering, radio groups, inert.
  *
- * @version 4.3.21
+ * @version 4.3.22
  * @author Yusuke Kamiyamane
  * @license MIT
  * @copyright Copyright (c) Yusuke Kamiyamane
@@ -238,15 +238,15 @@ export function inertOutside(element: Element): () => void {
     return () => {};
   }
 
-  function traverse(node: Element, callback: (_: Element) => void): void {
+  function traverse(node: Element, fn: (_: Element) => void): void {
     const parent = getComposedParent(node);
 
     if (parent) {
       for (const sibling of getComposedSiblings(node)) {
-        callback(sibling);
+        fn(sibling);
       }
 
-      traverse(parent, callback);
+      traverse(parent, fn);
     }
   }
 
@@ -254,9 +254,10 @@ export function inertOutside(element: Element): () => void {
   traverse(element, (node) => node && applyInert(node) && elements.push(node));
 
   return () => {
-    elements.forEach((element) => {
-      restoreInert(element);
-    });
+    for (let i = 0, l = elements.length; i < l; i++) {
+      const element = elements[i];
+      element && restoreInert(element);
+    }
   };
 }
 
@@ -669,7 +670,7 @@ function applyInert(element: Element): boolean {
   if (!isInert(element) || inertRefCounts.has(element)) {
     const count = inertRefCounts.get(element) ?? 0;
     inertRefCounts.set(element, count + 1);
-    count === 0 && element.setAttribute('inert', '');
+    !count && element.setAttribute('inert', '');
     return true;
   } else {
     return false;
