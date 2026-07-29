@@ -24,11 +24,11 @@ import {
 } from 'power-focusable';
 
 // CDNs
-import { ... } 'https://esm.sh/power-focusable@4.3.22';
+import { ... } 'https://esm.sh/power-focusable@4.3.23';
 // or
-import { ... } 'https://cdn.jsdelivr.net/npm/power-focusable@4.3.22/+esm';
+import { ... } 'https://cdn.jsdelivr.net/npm/power-focusable@4.3.23/+esm';
 // or
-import { ... } 'https://esm.unpkg.com/power-focusable@4.3.22';
+import { ... } 'https://esm.unpkg.com/power-focusable@4.3.23';
 ```
 
 ## 🪄 Options
@@ -103,7 +103,7 @@ Creates a keyboard focus trap within the container. Automatically focuses the co
 const cleanup = createFocusTrap(container);
 // => () => void
 //
-// container: Element
+// container (optional): Element (default: <body>)
 ```
 
 ### `getFocusables`
