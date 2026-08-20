@@ -3,7 +3,7 @@
  * High-precision focus management utility with full composed tree support.
  * Handles complex focus rules including tabindex ordering, radio groups, inert.
  *
- * @version 4.3.24
+ * @version 4.3.25
  * @author Yusuke Kamiyamane
  * @license MIT
  * @copyright Copyright (c) Yusuke Kamiyamane
