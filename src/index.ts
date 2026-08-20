@@ -749,17 +749,3 @@ function isInert(element: Element): boolean {
 function isUngroupedRadio(element: HTMLInputElement): boolean {
   return element.type === 'radio' && !!element.name;
 }
-
-// -----------------------------------------------------------------------------
-// Exports
-// -----------------------------------------------------------------------------
-
-export default {
-  createFocusTrap,
-  getFocusables,
-  getNextFocusable,
-  getPreviousFocusable,
-  hasFocusable,
-  inertOutside,
-  isFocusable,
-};
