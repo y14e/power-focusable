@@ -3,7 +3,7 @@
  * High-precision focus management utility with full composed tree support.
  * Handles complex focus rules including tabindex ordering, radio groups, inert.
  *
- * @version 4.3.23
+ * @version 4.3.24
  * @author Yusuke Kamiyamane
  * @license MIT
  * @copyright Copyright (c) Yusuke Kamiyamane
@@ -749,3 +749,17 @@ function isInert(element: Element): boolean {
 function isUngroupedRadio(element: HTMLInputElement): boolean {
   return element.type === 'radio' && !!element.name;
 }
+
+// -----------------------------------------------------------------------------
+// Exports
+// -----------------------------------------------------------------------------
+
+export default {
+  createFocusTrap,
+  getFocusables,
+  getNextFocusable,
+  getPreviousFocusable,
+  hasFocusable,
+  inertOutside,
+  isFocusable,
+};
