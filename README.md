@@ -24,11 +24,11 @@ import {
 } from 'power-focusable';
 
 // CDNs
-import { ... } 'https://esm.sh/power-focusable@4.3.25';
+import { ... } 'https://esm.sh/power-focusable@4.3.26';
 // or
-import { ... } 'https://cdn.jsdelivr.net/npm/power-focusable@4.3.25/+esm';
+import { ... } 'https://cdn.jsdelivr.net/npm/power-focusable@4.3.26/+esm';
 // or
-import { ... } 'https://esm.unpkg.com/power-focusable@4.3.25';
+import { ... } 'https://esm.unpkg.com/power-focusable@4.3.26';
 ```
 
 ## 🪄 Options
@@ -44,7 +44,7 @@ interface PowerFocusableOptions {
   wrap: boolean;                      // default: false
 }
 
-type PowerFocusableFunction = ((element: Element) => boolean) | undefined;
+type PowerFocusableFunction = ((element: Element) => boolean);
 ```
 
 ### `anchor`
