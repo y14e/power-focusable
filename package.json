@@ -2,27 +2,6 @@
   "name": "power-focusable",
   "version": "4.3.26",
   "description": "High-precision focus management utility with full composed tree support",
-  "type": "module",
-  "main": "./dist/index.cjs",
-  "module": "./dist/index.js",
-  "types": "./dist/index.d.ts",
-  "exports": {
-    ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.js",
-      "require": "./dist/index.cjs"
-    }
-  },
-  "files": [
-    "dist",
-    "LICENSE",
-    "README.md"
-  ],
-  "scripts": {
-    "build": "tsup",
-    "prepublishOnly": "npm run build",
-    "lint": "tsc --noEmit"
-  },
   "keywords": [
     "a11y",
     "accessibility",
@@ -34,16 +13,37 @@
     "typescript",
     "utility"
   ],
-  "author": "Yusuke Kamiyamane",
-  "license": "MIT",
+  "homepage": "https://github.com/y14e/power-focusable#readme",
+  "bugs": {
+    "url": "https://github.com/y14e/power-focusable/issues"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/y14e/power-focusable.git"
   },
-  "bugs": {
-    "url": "https://github.com/y14e/power-focusable/issues"
+  "license": "MIT",
+  "author": "Yusuke Kamiyamane",
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
   },
-  "homepage": "https://github.com/y14e/power-focusable#readme",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist",
+    "LICENSE",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "lint": "tsc --noEmit",
+    "prepublishOnly": "npm run build"
+  },
   "devDependencies": {
     "bun-types": "latest",
     "happy-dom": "^20.9.0",
