@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { beforeEach, describe, expect, it } from 'vitest';
 
 import {
   getFocusables,
@@ -112,18 +112,18 @@ describe('Full Integration Test', () => {
     // Slotted
     //
     const slotted1 = Object.assign(document.createElement('button'), {
-      textContent: 'Slotted Button A',
-      slot: 'slot-a',
       id: 'slot-btn-a',
+      slot: 'slot-a',
+      textContent: 'Slotted Button A',
     });
 
     document.body.appendChild(slotted1);
 
     const slotted2 = Object.assign(document.createElement('button'), {
-      textContent: 'Slotted Button B',
-      slot: 'slot-a',
       id: 'slot-btn-b',
+      slot: 'slot-a',
       tabIndex: 2,
+      textContent: 'Slotted Button B',
     });
 
     document.body.appendChild(slotted2);
@@ -146,9 +146,9 @@ describe('Full Integration Test', () => {
     `;
 
     const slottedNested = Object.assign(document.createElement('button'), {
-      textContent: 'Nested Slotted Button',
-      slot: 'slot-b',
       id: 'slot-btn-nested',
+      slot: 'slot-b',
+      textContent: 'Nested Slotted Button',
     });
 
     document.body.appendChild(slottedNested);
