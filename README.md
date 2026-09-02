@@ -24,11 +24,11 @@ import {
 } from 'power-focusable';
 
 // CDNs
-import { ... } 'https://esm.sh/power-focusable@4.3.26';
+import { ... } 'https://esm.sh/power-focusable@4.3.27';
 // or
-import { ... } 'https://cdn.jsdelivr.net/npm/power-focusable@4.3.26/+esm';
+import { ... } 'https://cdn.jsdelivr.net/npm/power-focusable@4.3.27/+esm';
 // or
-import { ... } 'https://esm.unpkg.com/power-focusable@4.3.26';
+import { ... } 'https://esm.unpkg.com/power-focusable@4.3.27';
 ```
 
 ## 🪄 Options
@@ -37,14 +37,14 @@ import { ... } 'https://esm.unpkg.com/power-focusable@4.3.26';
 interface PowerFocusableOptions {
   anchor: Element | null;             // default: DocumentOrShadowRoot.activeElement
   composed: boolean;                  // default: false
-  filter: PowerFocusableFunction;     // default: undefined
-  include: PowerFocusableFunction;    // default: undefined
+  filter: Predicate<Element>;         // default: undefined
+  include: Predicate<Element>;        // default: undefined
   skipNegativeTabIndexCheck: boolean; // default: false
   skipVisibilityCheck: boolean;       // default: false
   wrap: boolean;                      // default: false
 }
 
-type PowerFocusableFunction = ((element: Element) => boolean);
+type Predicate<T> = (element: T) => boolean;
 ```
 
 ### `anchor`
