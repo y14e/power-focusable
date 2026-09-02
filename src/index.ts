@@ -646,7 +646,6 @@ function getComposedSiblings(node: Element): Element[] {
     parent instanceof HTMLSlotElement
       ? parent.assignedElements({ flatten: true })
       : getComposedChildren(parent);
-
   const filtered: Element[] = [];
 
   for (let i = 0, l = siblings.length; i < l; i++) {
