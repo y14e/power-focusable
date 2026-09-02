@@ -3,7 +3,7 @@
  * High-precision focus management utility with full composed tree support.
  * Handles complex focus rules including tabindex ordering, radio groups, inert.
  *
- * @version 4.3.27
+ * @version 4.3.28
  * @author Yusuke Kamiyamane
  * @license MIT
  * @copyright Copyright (c) Yusuke Kamiyamane
@@ -17,14 +17,14 @@
 export interface PowerFocusableOptions {
   anchor: Element | null;
   composed: boolean;
-  filter: Predicate<Element>;
-  include: Predicate<Element>;
+  filter: PredicateFunction;
+  include: PredicateFunction;
   skipNegativeTabIndexCheck: boolean;
   skipVisibilityCheck: boolean;
   wrap: boolean;
 }
 
-type Predicate<T> = (element: T) => boolean;
+type PredicateFunction = (element: Element) => boolean;
 
 // -----------------------------------------------------------------------------
 // Constants
