@@ -115,6 +115,12 @@ getFocusables(container);
 // => Element[]
 //
 // container (optional): Element (default: <body>)
+
+// Traverses the composed tree (including shadow DOM; slower)
+getFocusables(container, { composed: true });
+
+// Uses custom filter function
+getFocusables(container, { filter: (element) => !element.matches('[data-skip-focus]') });
 ```
 
 ### `getNextFocusable`
@@ -129,6 +135,12 @@ getNextFocusable(container);
 
 // Specifies the starting element
 getNextFocusable(container, { anchor: document.querySelector('.button') });
+
+// Traverses the composed tree (including shadow DOM; slower)
+getNextFocusable(container, { composed: true });
+
+// Uses custom filter function
+getNextFocusable(container, { filter: (element) => !element.matches('[data-skip-focus]') });
 
 // Wraps around to the first element when reaching the end
 getNextFocusable(container, { wrap: true });
@@ -147,6 +159,12 @@ getPreviousFocusable(container);
 // Specifies the starting element
 getPreviousFocusable(container, { anchor: document.querySelector('.button') });
 
+// Traverses the composed tree (including shadow DOM; slower)
+getPreviousFocusable(container, { composed: true });
+
+// Uses custom filter function
+getPreviousFocusable(container, { filter: (element) => !element.matches('[data-skip-focus]') });
+
 // Wraps around to the last element when reaching the end
 getPreviousFocusable(container, { wrap: true });
 
@@ -161,6 +179,12 @@ hasFocusable(container);
 // => boolean
 //
 // container (optional): Element (default: <body>)
+
+// Traverses the composed tree (including shadow DOM; slower)
+hasFocusable(container, { composed: true });
+
+// Uses custom filter function
+hasFocusable(container, { filter: (element) => !element.matches('[data-skip-focus]') });
 ```
 
 ### `inertOutside`
