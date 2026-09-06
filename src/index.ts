@@ -686,9 +686,6 @@ function resolveOptions(
     if (active instanceof Element) {
       console.warn('Invalid anchor element. Fallback: active element.');
       anchor = active;
-    } else {
-      console.warn('Invalid anchor element');
-      anchor = null;
     }
   }
 
