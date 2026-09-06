@@ -24,24 +24,24 @@ import {
 } from 'power-focusable';
 
 // CDNs
-import { ... } 'https://esm.sh/power-focusable@4.3.28';
+import { ... } 'https://esm.sh/power-focusable@4.3.29';
 // or
-import { ... } 'https://cdn.jsdelivr.net/npm/power-focusable@4.3.28/+esm';
+import { ... } 'https://cdn.jsdelivr.net/npm/power-focusable@4.3.29/+esm';
 // or
-import { ... } 'https://esm.unpkg.com/power-focusable@4.3.28';
+import { ... } 'https://esm.unpkg.com/power-focusable@4.3.29';
 ```
 
 ## 🪄 Options
 
 ```ts
 interface PowerFocusableOptions {
-  anchor: Element | null;             // default: DocumentOrShadowRoot.activeElement
-  composed: boolean;                  // default: false
-  filter: PredicateFunction;          // default: undefined
-  include: PredicateFunction;         // default: undefined
-  skipNegativeTabIndexCheck: boolean; // default: false
-  skipVisibilityCheck: boolean;       // default: false
-  wrap: boolean;                      // default: false
+  anchor: Element | null;                 // default: DocumentOrShadowRoot.activeElement
+  composed: boolean;                      // default: false
+  filter: PredicateFunction | undefined;  // default: undefined
+  include: PredicateFunction | undefined; // default: undefined
+  skipNegativeTabIndexCheck: boolean;     // default: false
+  skipVisibilityCheck: boolean;           // default: false
+  wrap: boolean;                          // default: false
 }
 
 type PredicateFunction = (element: Element) => boolean;
@@ -115,12 +115,6 @@ getFocusables(container);
 // => Element[]
 //
 // container (optional): Element (default: <body>)
-
-// Traverses the composed tree (including shadow DOM; slower)
-getFocusables(container, { composed: true });
-
-// Uses custom filter function
-getFocusables(container, { filter: (element) => !element.matches('[data-skip-focus]') });
 ```
 
 ### `getNextFocusable`
@@ -135,12 +129,6 @@ getNextFocusable(container);
 
 // Specifies the starting element
 getNextFocusable(container, { anchor: document.querySelector('.button') });
-
-// Traverses the composed tree (including shadow DOM; slower)
-getNextFocusable(container, { composed: true });
-
-// Uses custom filter function
-getNextFocusable(container, { filter: (element) => !element.matches('[data-skip-focus]') });
 
 // Wraps around to the first element when reaching the end
 getNextFocusable(container, { wrap: true });
@@ -159,12 +147,6 @@ getPreviousFocusable(container);
 // Specifies the starting element
 getPreviousFocusable(container, { anchor: document.querySelector('.button') });
 
-// Traverses the composed tree (including shadow DOM; slower)
-getPreviousFocusable(container, { composed: true });
-
-// Uses custom filter function
-getPreviousFocusable(container, { filter: (element) => !element.matches('[data-skip-focus]') });
-
 // Wraps around to the last element when reaching the end
 getPreviousFocusable(container, { wrap: true });
 
@@ -179,12 +161,6 @@ hasFocusable(container);
 // => boolean
 //
 // container (optional): Element (default: <body>)
-
-// Traverses the composed tree (including shadow DOM; slower)
-hasFocusable(container, { composed: true });
-
-// Uses custom filter function
-hasFocusable(container, { filter: (element) => !element.matches('[data-skip-focus]') });
 ```
 
 ### `inertOutside`

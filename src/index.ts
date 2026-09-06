@@ -3,7 +3,7 @@
  * High-precision focus management utility with full composed tree support.
  * Handles complex focus rules including tabindex ordering, radio groups, inert.
  *
- * @version 4.3.28
+ * @version 4.3.29
  * @author Yusuke Kamiyamane
  * @license MIT
  * @copyright Copyright (c) Yusuke Kamiyamane
@@ -17,8 +17,8 @@
 export interface PowerFocusableOptions {
   anchor: Element | null;
   composed: boolean;
-  filter: PredicateFunction;
-  include: PredicateFunction;
+  filter: PredicateFunction | undefined;
+  include: PredicateFunction | undefined;
   skipNegativeTabIndexCheck: boolean;
   skipVisibilityCheck: boolean;
   wrap: boolean;
@@ -117,43 +117,13 @@ export function getFocusables(
     container = document.body;
   }
 
-  let {
-    composed = false,
+  const {
+    composed,
     filter,
     include,
-    skipNegativeTabIndexCheck = false,
-    skipVisibilityCheck = false,
-  } = options;
-
-  if (typeof composed !== 'boolean') {
-    console.warn('Invalid composed option. Fallback: false.');
-    composed = false;
-  }
-
-  if (typeof filter !== 'undefined' && typeof filter !== 'function') {
-    console.warn(
-      'Invalid filter function. Fallback: no filter function (undefined).',
-    );
-    filter = undefined;
-  }
-
-  if (typeof include !== 'undefined' && typeof include !== 'function') {
-    console.warn(
-      'Invalid include function. Fallback: no include function (undefined).',
-    );
-    include = undefined;
-  }
-
-  if (typeof skipNegativeTabIndexCheck !== 'boolean') {
-    console.warn('Invalid skipNegativeTabIndexCheck option. Fallback: false.');
-    skipNegativeTabIndexCheck = false;
-  }
-
-  if (typeof skipVisibilityCheck !== 'boolean') {
-    console.warn('Invalid skipVisibilityCheck option. Fallback: false.');
-    skipVisibilityCheck = false;
-  }
-
+    skipNegativeTabIndexCheck,
+    skipVisibilityCheck,
+  } = resolveOptions(options);
   const candidates: Element[] = [];
 
   if (composed || include) {
@@ -273,18 +243,8 @@ export function isFocusable(
     return false;
   }
 
-  let { skipNegativeTabIndexCheck = false, skipVisibilityCheck = false } =
-    options;
-
-  if (typeof skipNegativeTabIndexCheck !== 'boolean') {
-    console.warn('Invalid skipNegativeTabIndexCheck option. Fallback: false.');
-    skipNegativeTabIndexCheck = false;
-  }
-
-  if (typeof skipVisibilityCheck !== 'boolean') {
-    console.warn('Invalid skipVisibilityCheck option. Fallback: false.');
-    skipVisibilityCheck = false;
-  }
+  const { skipNegativeTabIndexCheck, skipVisibilityCheck } =
+    resolveOptions(options);
 
   // Fast path [hidden], [inert]
   if (element.hasAttribute('hidden') || isInert(element)) {
@@ -338,26 +298,19 @@ function getRelativeFocusable(
     container = document.body;
   }
 
-  let {
-    anchor = getActiveElement(),
-    composed = false,
+  const {
+    anchor,
+    composed,
     filter,
     include,
-    skipNegativeTabIndexCheck = false,
-    skipVisibilityCheck = false,
-    wrap = false,
-  } = options;
+    skipNegativeTabIndexCheck,
+    skipVisibilityCheck,
+    wrap,
+  } = resolveOptions(options);
 
   if (!(anchor instanceof Element)) {
-    const active = getActiveElement();
-
-    if (active instanceof Element) {
-      console.warn('Invalid anchor element. Fallback: active element.');
-      anchor = active;
-    } else {
-      console.warn('Invalid anchor element');
-      return null;
-    }
+    console.warn('Invalid anchor element');
+    return null;
   }
 
   if (!containsComposed(container, anchor)) {
@@ -365,48 +318,13 @@ function getRelativeFocusable(
     return null;
   }
 
-  if (typeof composed !== 'boolean') {
-    console.warn('Invalid composed option. Fallback: false.');
-    composed = false;
-  }
-
-  if (typeof filter !== 'undefined' && typeof filter !== 'function') {
-    console.warn(
-      'Invalid filter function. Fallback: no filter function (undefined).',
-    );
-    filter = undefined;
-  }
-
-  if (typeof include !== 'undefined' && typeof include !== 'function') {
-    console.warn(
-      'Invalid include function. Fallback: no include function (undefined).',
-    );
-    include = undefined;
-  }
-
-  if (typeof skipNegativeTabIndexCheck !== 'boolean') {
-    console.warn('Invalid skipNegativeTabIndexCheck option. Fallback: false.');
-    skipNegativeTabIndexCheck = false;
-  }
-
-  if (typeof skipVisibilityCheck !== 'boolean') {
-    console.warn('Invalid skipVisibilityCheck option. Fallback: false.');
-    skipVisibilityCheck = false;
-  }
-
-  if (typeof wrap !== 'boolean') {
-    console.warn('Invalid wrap option. Fallback: false.');
-    wrap = false;
-  }
-
-  const settings = {
+  const focusables = getFocusables(container, {
     composed,
+    filter,
+    include,
     skipNegativeTabIndexCheck,
     skipVisibilityCheck,
-  };
-  filter && Object.assign(settings, { filter });
-  include && Object.assign(settings, { include });
-  const focusables = getFocusables(container, settings);
+  });
   const { length } = focusables;
 
   if (!length) {
@@ -747,4 +665,74 @@ function isInert(element: Element): boolean {
 
 function isUngroupedRadio(element: HTMLInputElement): boolean {
   return element.type === 'radio' && !!element.name;
+}
+
+function resolveOptions(
+  options: Partial<PowerFocusableOptions>,
+): PowerFocusableOptions {
+  let {
+    anchor = getActiveElement(),
+    composed = false,
+    filter,
+    include,
+    skipNegativeTabIndexCheck = false,
+    skipVisibilityCheck = false,
+    wrap = false,
+  } = options;
+
+  if (!(anchor instanceof Element)) {
+    const active = getActiveElement();
+
+    if (active instanceof Element) {
+      console.warn('Invalid anchor element. Fallback: active element.');
+      anchor = active;
+    } else {
+      console.warn('Invalid anchor element');
+      anchor = null;
+    }
+  }
+
+  if (typeof composed !== 'boolean') {
+    console.warn('Invalid composed option. Fallback: false.');
+    composed = false;
+  }
+
+  if (filter !== undefined && typeof filter !== 'function') {
+    console.warn(
+      'Invalid filter function. Fallback: no filter function (undefined).',
+    );
+    filter = undefined;
+  }
+
+  if (include !== undefined && typeof include !== 'function') {
+    console.warn(
+      'Invalid include function. Fallback: no include function (undefined).',
+    );
+    include = undefined;
+  }
+
+  if (typeof skipNegativeTabIndexCheck !== 'boolean') {
+    console.warn('Invalid skipNegativeTabIndexCheck option. Fallback: false.');
+    skipNegativeTabIndexCheck = false;
+  }
+
+  if (typeof skipVisibilityCheck !== 'boolean') {
+    console.warn('Invalid skipVisibilityCheck option. Fallback: false.');
+    skipVisibilityCheck = false;
+  }
+
+  if (typeof wrap !== 'boolean') {
+    console.warn('Invalid wrap option. Fallback: false.');
+    wrap = false;
+  }
+
+  return {
+    anchor,
+    composed,
+    filter,
+    include,
+    skipNegativeTabIndexCheck,
+    skipVisibilityCheck,
+    wrap,
+  };
 }
