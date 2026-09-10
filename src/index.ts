@@ -3,7 +3,7 @@
  * High-precision focus management utility with full composed tree support.
  * Handles complex focus rules including tabindex ordering, radio groups, inert.
  *
- * @version 4.3.29
+ * @version 4.3.30
  * @author Yusuke Kamiyamane
  * @license MIT
  * @copyright Copyright (c) Yusuke Kamiyamane
@@ -30,7 +30,8 @@ type PredicateFunction = (element: Element) => boolean;
 // Constants
 // -----------------------------------------------------------------------------
 
-const FOCUSABLE_SELECTOR = `:is(a[href], area[href], button, embed, iframe, input:not([type="hidden" i]), object, select, details > summary:first-of-type, textarea, [contenteditable]:not([contenteditable="false" i]), [controls], [tabindex]):not(:disabled, [hidden], [inert], [tabindex="-1"])`;
+const FOCUSABLE_SELECTOR =
+  ':is(a[href], area[href], button, embed, iframe, input:not([type="hidden" i]), object, select, details > summary:first-of-type, textarea, [contenteditable]:not([contenteditable="false" i]), [controls], [tabindex]):not(:disabled, [hidden], [inert], [tabindex="-1"])';
 const FOCUSABLE_SELECTOR_WITH_NEGATIVE_TABINDEX = FOCUSABLE_SELECTOR.replace(
   /(,\s*)?\[tabindex="-1"\]/g,
   '',
@@ -138,41 +139,24 @@ export function getFocusables(
         candidates[candidates.length] = node;
       }
 
-      const children = composed ? getComposedChildren(node) : getChildren(node);
-
-      for (let i = 0, l = children.length; i < l; i++) {
-        const child = children[i];
-        child && traverse(child);
-      }
+      (composed ? getComposedChildren(node) : getChildren(node)).map(traverse);
     }
 
-    const children = composed
-      ? getComposedChildren(container)
-      : getChildren(container);
-
-    for (let i = 0, l = children.length; i < l; i++) {
-      const child = children[i];
-      child && traverse(child);
-    }
+    (composed ? getComposedChildren(container) : getChildren(container)).map(
+      traverse,
+    );
   } else {
-    const matches = container.querySelectorAll(
+    for (const match of container.querySelectorAll(
       skipNegativeTabIndexCheck
         ? FOCUSABLE_SELECTOR_WITH_NEGATIVE_TABINDEX
         : FOCUSABLE_SELECTOR,
-    );
-
-    for (let i = 0, l = matches.length; i < l; i++) {
-      const matched = matches[i];
-
-      if (
-        matched &&
-        isFocusable(matched, {
+    )) {
+      match &&
+        isFocusable(match, {
           skipNegativeTabIndexCheck,
           skipVisibilityCheck,
-        })
-      ) {
-        candidates[candidates.length] = matched;
-      }
+        }) &&
+        candidates.push(match);
     }
   }
 
@@ -212,23 +196,14 @@ export function inertOutside(element: Element): () => void {
     const parent = getComposedParent(node);
 
     if (parent) {
-      for (const sibling of getComposedSiblings(node)) {
-        fn(sibling);
-      }
-
+      getComposedSiblings(node).map(fn);
       traverse(parent, fn);
     }
   }
 
   const elements: Element[] = [];
   traverse(element, (node) => node && applyInert(node) && elements.push(node));
-
-  return () => {
-    for (let i = 0, l = elements.length; i < l; i++) {
-      const element = elements[i];
-      element && restoreInert(element);
-    }
-  };
+  return () => elements.map(restoreInert);
 }
 
 export function isFocusable(
@@ -401,9 +376,7 @@ function normalizeRadioGroup(elements: Element[]): Element[] {
     Map<HTMLFormElement | null, Map<string, HTMLInputElement[]>>
   > | null = null;
 
-  for (let i = 0, l = elements.length; i < l; i++) {
-    const element = elements[i];
-
+  for (const element of elements) {
     if (!(element instanceof HTMLInputElement)) {
       continue;
     }
@@ -469,28 +442,13 @@ function sortByTabIndex(elements: Element[]): Element[] {
   const ordered: Element[] = [];
   const natural: Element[] = [];
 
-  for (let i = 0, l = elements.length; i < l; i++) {
-    const element = elements[i];
-
-    if (element) {
-      const target = getTabIndex(element) > 0 ? ordered : natural;
-      target[target.length] = element;
-    }
+  for (const element of elements) {
+    (getTabIndex(element) > 0 ? ordered : natural).push(element);
   }
 
-  ordered.sort((a, b) => getTabIndex(a) - getTabIndex(b));
-  let count = 0;
-  const sorted = new Array(ordered.length + natural.length);
-
-  for (let i = 0, l = ordered.length; i < l; i++) {
-    sorted[count++] = ordered[i];
-  }
-
-  for (let i = 0, l = natural.length; i < l; i++) {
-    sorted[count++] = natural[i];
-  }
-
-  return sorted;
+  return ordered
+    .sort((a, b) => getTabIndex(a) - getTabIndex(b))
+    .concat(natural);
 }
 
 // -----------------------------------------------------------------------------
@@ -560,18 +518,13 @@ function getComposedSiblings(node: Element): Element[] {
     return [];
   }
 
-  const siblings =
-    parent instanceof HTMLSlotElement
-      ? parent.assignedElements({ flatten: true })
-      : getComposedChildren(parent);
   const filtered: Element[] = [];
 
-  for (let i = 0, l = siblings.length; i < l; i++) {
-    const sibling = siblings[i];
-
-    if (sibling && sibling !== node) {
-      filtered[filtered.length] = sibling;
-    }
+  for (const sibling of (parent instanceof HTMLSlotElement
+    ? parent.assignedElements({ flatten: true })
+    : getComposedChildren(parent)
+  ).filter((sibling) => sibling !== node)) {
+    filtered.push(sibling);
   }
 
   return filtered;
