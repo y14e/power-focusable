@@ -3,7 +3,7 @@
  * High-precision focus management utility with full composed tree support.
  * Handles complex focus rules including tabindex ordering, radio groups, inert.
  *
- * @version 4.3.31
+ * @version 4.3.32
  * @author Yusuke Kamiyamane
  * @license MIT
  * @copyright Copyright (c) Yusuke Kamiyamane
@@ -146,17 +146,17 @@ export function getFocusables(
       traverse,
     );
   } else {
-    for (const m of container.querySelectorAll(
+    for (const match of container.querySelectorAll(
       skipNegativeTabIndexCheck
         ? FOCUSABLE_SELECTOR_WITH_NEGATIVE_TABINDEX
         : FOCUSABLE_SELECTOR,
     )) {
-      m &&
-        isFocusable(m, {
+      match &&
+        isFocusable(match, {
           skipNegativeTabIndexCheck,
           skipVisibilityCheck,
         }) &&
-        candidates.push(m);
+        candidates.push(match);
     }
   }
 
@@ -376,12 +376,12 @@ function normalizeRadioGroup(elements: Element[]): Element[] {
     Map<HTMLFormElement | null, Map<string, HTMLInputElement[]>>
   > | null = null;
 
-  for (const e of elements) {
-    if (!(e instanceof HTMLInputElement)) {
+  for (const element of elements) {
+    if (!(element instanceof HTMLInputElement)) {
       continue;
     }
 
-    if (!isUngroupedRadio(e)) {
+    if (!isUngroupedRadio(element)) {
       continue;
     }
 
@@ -389,29 +389,29 @@ function normalizeRadioGroup(elements: Element[]): Element[] {
       map = new Map();
     }
 
-    const root = e.getRootNode();
-    let groups = map.get(root);
+    const root = element.getRootNode();
+    let forms = map.get(root);
+
+    if (!forms) {
+      forms = new Map();
+      map.set(root, forms);
+    }
+
+    let groups = forms.get(element.form);
 
     if (!groups) {
       groups = new Map();
-      map.set(root, groups);
+      forms.set(element.form, groups);
     }
 
-    let group = groups.get(e.form);
-
-    if (!group) {
-      group = new Map();
-      groups.set(e.form, group);
-    }
-
-    let radios = group.get(e.name);
+    let radios = groups.get(element.name);
 
     if (!radios) {
       radios = [];
-      group.set(e.name, radios);
+      groups.set(element.name, radios);
     }
 
-    radios.push(e);
+    radios.push(element);
   }
 
   if (!map) {
@@ -420,21 +420,21 @@ function normalizeRadioGroup(elements: Element[]): Element[] {
 
   const placeholder = new Set<HTMLInputElement>();
 
-  for (const v of map.values()) {
-    for (const w of v.values()) {
-      for (const x of w.values()) {
-        const radio = x.find((r) => r.checked) ?? x[0];
+  for (const forms of map.values()) {
+    for (const groups of forms.values()) {
+      for (const radios of groups.values()) {
+        const radio = radios.find((r) => r.checked) ?? radios[0];
         radio && placeholder.add(radio);
       }
     }
   }
 
-  return elements.filter((e) => {
-    if (!(e instanceof HTMLInputElement)) {
+  return elements.filter((element) => {
+    if (!(element instanceof HTMLInputElement)) {
       return true;
     }
 
-    return !isUngroupedRadio(e) || placeholder.has(e);
+    return !isUngroupedRadio(element) || placeholder.has(element);
   });
 }
 
@@ -442,8 +442,8 @@ function sortByTabIndex(elements: Element[]): Element[] {
   const ordered: Element[] = [];
   const natural: Element[] = [];
 
-  for (const e of elements) {
-    (getTabIndex(e) > 0 ? ordered : natural).push(e);
+  for (const element of elements) {
+    (getTabIndex(element) > 0 ? ordered : natural).push(element);
   }
 
   return ordered
@@ -520,11 +520,11 @@ function getComposedSiblings(node: Element): Element[] {
 
   const filtered: Element[] = [];
 
-  for (const s of (parent instanceof HTMLSlotElement
+  for (const sibling of (parent instanceof HTMLSlotElement
     ? parent.assignedElements({ flatten: true })
     : getComposedChildren(parent)
   ).filter((s) => s !== node)) {
-    filtered.push(s);
+    filtered.push(sibling);
   }
 
   return filtered;
