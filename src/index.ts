@@ -3,7 +3,7 @@
  * High-precision focus management utility with full composed tree support.
  * Handles complex focus rules including tabindex ordering, radio groups, inert.
  *
- * @version 4.3.33
+ * @version 4.4.0
  * @author Yusuke Kamiyamane
  * @license MIT
  * @copyright Copyright (c) Yusuke Kamiyamane
@@ -390,25 +390,25 @@ function normalizeRadioGroup(elements: Element[]): Element[] {
     }
 
     const root = element.getRootNode();
-    let groups = map.get(root);
+    let groupsByForm = map.get(root);
+
+    if (!groupsByForm) {
+      groupsByForm = new Map();
+      map.set(root, groupsByForm);
+    }
+
+    let groups = groupsByForm.get(element.form);
 
     if (!groups) {
       groups = new Map();
-      map.set(root, groups);
+      groupsByForm.set(element.form, groups);
     }
 
-    let group = groups.get(element.form);
-
-    if (!group) {
-      group = new Map();
-      groups.set(element.form, group);
-    }
-
-    let radios = group.get(element.name);
+    let radios = groups.get(element.name);
 
     if (!radios) {
       radios = [];
-      group.set(element.name, radios);
+      groups.set(element.name, radios);
     }
 
     radios.push(element);
@@ -420,9 +420,9 @@ function normalizeRadioGroup(elements: Element[]): Element[] {
 
   const placeholder = new Set<HTMLInputElement>();
 
-  for (const groups of map.values()) {
-    for (const group of groups.values()) {
-      for (const radios of group.values()) {
+  for (const groupsByForm of map.values()) {
+    for (const groups of groupsByForm.values()) {
+      for (const radios of groups.values()) {
         const radio = radios.find((r) => r.checked) ?? radios[0];
         radio && placeholder.add(radio);
       }
