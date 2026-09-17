@@ -3,7 +3,7 @@
  * High-precision focus management utility with full composed tree support.
  * Handles complex focus rules including tabindex ordering, radio groups, inert.
  *
- * @version 4.4.0
+ * @version 4.4.1
  * @author Yusuke Kamiyamane
  * @license MIT
  * @copyright Copyright (c) Yusuke Kamiyamane
@@ -49,8 +49,8 @@ export function createFocusTrap(
     container = document.body;
   }
 
-  const trap = new FocusTrap(container);
-  return () => trap.destroy();
+  const focusTrap = new FocusTrap(container);
+  return () => focusTrap.destroy();
 }
 
 class FocusTrap {
@@ -192,12 +192,12 @@ export function inertOutside(element: Element): () => void {
     return () => {};
   }
 
-  function traverse(node: Element, fn: (_: Element) => void): void {
+  function traverse(node: Element, callback: (_: Element) => void): void {
     const parent = getComposedParent(node);
 
     if (parent) {
-      getComposedSiblings(node).map(fn);
-      traverse(parent, fn);
+      getComposedSiblings(node).map(callback);
+      traverse(parent, callback);
     }
   }
 
@@ -390,28 +390,20 @@ function normalizeRadioGroup(elements: Element[]): Element[] {
     }
 
     const root = element.getRootNode();
-    let groupsByForm = map.get(root);
-
-    if (!groupsByForm) {
-      groupsByForm = new Map();
-      map.set(root, groupsByForm);
-    }
-
-    let groups = groupsByForm.get(element.form);
+    const groups = map.get(root) ?? map.set(root, new Map()).get(root);
 
     if (!groups) {
-      groups = new Map();
-      groupsByForm.set(element.form, groups);
+      continue;
     }
 
-    let radios = groups.get(element.name);
+    const { form, name } = element;
+    const radios = groups.get(form) ?? groups.set(form, new Map()).get(form);
 
     if (!radios) {
-      radios = [];
-      groups.set(element.name, radios);
+      continue;
     }
 
-    radios.push(element);
+    (radios.get(name) ?? radios.set(name, []).get(name))?.push(element);
   }
 
   if (!map) {
@@ -420,10 +412,10 @@ function normalizeRadioGroup(elements: Element[]): Element[] {
 
   const placeholder = new Set<HTMLInputElement>();
 
-  for (const groupsByForm of map.values()) {
-    for (const groups of groupsByForm.values()) {
-      for (const radios of groups.values()) {
-        const radio = radios.find((r) => r.checked) ?? radios[0];
+  for (const v of map.values()) {
+    for (const w of v.values()) {
+      for (const x of w.values()) {
+        const radio = x.find((r) => r.checked) ?? x[0];
         radio && placeholder.add(radio);
       }
     }

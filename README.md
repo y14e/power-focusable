@@ -167,7 +167,6 @@ getPreviousFocusable(container, { filter: (element) => !element.matches('[data-s
 
 // Wraps around to the last element when reaching the end
 getPreviousFocusable(container, { wrap: true });
-
 ```
 
 ### `hasFocusable`
@@ -207,5 +206,4 @@ isFocusable(element);
 // => boolean
 //
 // element: Element
-
 ```
