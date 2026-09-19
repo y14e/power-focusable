@@ -3,7 +3,7 @@
  * High-precision focus management utility with full composed tree support.
  * Handles complex focus rules including tabindex ordering, radio groups, inert.
  *
- * @version 4.4.2
+ * @version 4.4.3
  * @author Yusuke Kamiyamane
  * @license MIT
  * @copyright Copyright (c) Yusuke Kamiyamane
@@ -447,7 +447,7 @@ function sortByTabIndex(elements: Element[]): Element[] {
 // Composed
 // -----------------------------------------------------------------------------
 
-function containsComposed(container: Node, element: Node): boolean {
+export function containsComposed(container: Node, element: Node): boolean {
   let current: Node | null = element;
 
   while (current) {
