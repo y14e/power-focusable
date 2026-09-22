@@ -1,19 +1,3 @@
-/**
- * Power Focusable
- * High-precision focus management utility with full composed tree support.
- * Handles complex focus rules including tabindex ordering, radio groups, inert.
- *
- * @version 4.4.3
- * @author Yusuke Kamiyamane
- * @license MIT
- * @copyright Copyright (c) Yusuke Kamiyamane
- * @see {@link https://github.com/y14e/power-focusable}
- */
-
-// -----------------------------------------------------------------------------
-// Types
-// -----------------------------------------------------------------------------
-
 export interface PowerFocusableOptions {
   anchor: Element | null;
   composed: boolean;
@@ -26,20 +10,12 @@ export interface PowerFocusableOptions {
 
 type PredicateFunction = (element: Element) => boolean;
 
-// -----------------------------------------------------------------------------
-// Constants
-// -----------------------------------------------------------------------------
-
 const FOCUSABLE_SELECTOR =
   ':is(a[href], area[href], button, embed, iframe, input:not([type="hidden" i]), object, select, details > summary:first-of-type, textarea, [contenteditable]:not([contenteditable="false" i]), [controls], [tabindex]):not(:disabled, [hidden], [inert], [tabindex="-1"])';
 const FOCUSABLE_SELECTOR_WITH_NEGATIVE_TABINDEX = FOCUSABLE_SELECTOR.replace(
   /(,\s*)?\[tabindex="-1"\]/g,
   '',
 );
-
-// -----------------------------------------------------------------------------
-// APIs
-// -----------------------------------------------------------------------------
 
 export function createFocusTrap(
   container: Element = document.body,
@@ -259,10 +235,6 @@ export function isFocusable(
   return true;
 }
 
-// -----------------------------------------------------------------------------
-// Core
-// -----------------------------------------------------------------------------
-
 function getRelativeFocusable(
   container: Element,
   offset: number,
@@ -443,10 +415,6 @@ function sortByTabIndex(elements: Element[]): Element[] {
     .concat(natural);
 }
 
-// -----------------------------------------------------------------------------
-// Composed
-// -----------------------------------------------------------------------------
-
 export function containsComposed(container: Node, element: Node): boolean {
   let current: Node | null = element;
 
@@ -522,10 +490,6 @@ function getComposedSiblings(node: Element): Element[] {
   return filtered;
 }
 
-// -----------------------------------------------------------------------------
-// Inert
-// -----------------------------------------------------------------------------
-
 const inertRefCounts = new WeakMap<Element, number>();
 
 function applyInert(element: Element): boolean {
@@ -553,10 +517,6 @@ function restoreInert(element: Element): void {
     inertRefCounts.set(element, count - 1);
   }
 }
-
-// -----------------------------------------------------------------------------
-// Utils
-// -----------------------------------------------------------------------------
 
 export function focusElement(element: Element): void {
   'focus' in element && typeof element.focus === 'function' && element.focus();
