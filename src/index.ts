@@ -197,12 +197,12 @@ export function isFocusable(
   const { skipNegativeTabIndexCheck, skipVisibilityCheck } =
     resolveOptions(options);
 
-  // Fast path [hidden], [inert]
+  // Fast path: [hidden], [inert]
   if (element.hasAttribute('hidden') || isInert(element)) {
     return false;
   }
 
-  // Fast path [tabindex="-1"]
+  // Fast path: [tabindex="-1"]
   if (!skipNegativeTabIndexCheck && getTabIndex(element) < 0) {
     return false;
   }
