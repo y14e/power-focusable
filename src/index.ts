@@ -25,8 +25,8 @@ export function createFocusTrap(
     container = document.body;
   }
 
-  const focusTrap = new FocusTrap(container);
-  return () => focusTrap.destroy();
+  const instance = new FocusTrap(container);
+  return () => instance.destroy();
 }
 
 class FocusTrap {
