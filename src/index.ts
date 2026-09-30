@@ -541,13 +541,7 @@ function isDisabled(element: Element): boolean {
 }
 
 function isFormControl(element: Element): boolean {
-  const name = element.tagName;
-  return (
-    name === 'BUTTON' ||
-    name === 'INPUT' ||
-    name === 'SELECT' ||
-    name === 'TEXTAREA'
-  );
+  return ['BUTTON', 'INPUT', 'SELECT', 'TEXTAREA'].includes(element.tagName);
 }
 
 function isInert(element: Element): boolean {
