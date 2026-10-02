@@ -55,7 +55,7 @@ Used by `getNextFocusable` and `getPreviousFocusable`.
 
 ### `composed`
 
-If `true`, traverses the composed tree (including shadow DOM; slower)
+If `true`, traverses the composed tree (including shadow DOM; slower).
 
 Used by `getFocusables`, `getNextFocusable`, `getPreviousFocusable`, and `hasFocusable`.
 
