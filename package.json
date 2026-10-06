@@ -1,6 +1,6 @@
 {
   "name": "power-focusable",
-  "version": "4.4.6",
+  "version": "4.4.7",
   "description": "High-precision focus management utility with full composed tree support",
   "keywords": [
     "a11y",
@@ -42,7 +42,8 @@
   "scripts": {
     "build": "tsup",
     "lint": "tsc --noEmit",
-    "prepublishOnly": "npm run build"
+    "prepublishOnly": "npm run build",
+    "test": "vitest"
   },
   "devDependencies": {
     "bun-types": "latest",

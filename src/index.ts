@@ -103,25 +103,7 @@ export function getFocusables(
   } = resolveOptions(options);
   const candidates: Element[] = [];
 
-  if (composed || include) {
-    function traverse(node: Element): void {
-      if (
-        isFocusable(node, {
-          skipNegativeTabIndexCheck,
-          skipVisibilityCheck,
-        }) ||
-        include?.(node)
-      ) {
-        candidates.push(node);
-      }
-
-      (composed ? getComposedChildren(node) : [...node.children]).map(traverse);
-    }
-
-    (composed ? getComposedChildren(container) : [...container.children]).map(
-      traverse,
-    );
-  } else {
+  if (!composed && !include) {
     for (const match of container.querySelectorAll(
       skipNegativeTabIndexCheck
         ? FOCUSABLE_SELECTOR_WITH_NEGATIVE_TABINDEX
@@ -134,10 +116,30 @@ export function getFocusables(
         }) &&
         candidates.push(match);
     }
+  } else {
+    function traverse(node: Element): void {
+      if (
+        isFocusable(node, {
+          skipNegativeTabIndexCheck,
+          skipVisibilityCheck,
+        }) ||
+        include?.(node)
+      ) {
+        candidates.push(node);
+      }
+
+      (!composed ? [...node.children] : getComposedChildren(node)).map(
+        traverse,
+      );
+    }
+
+    (!composed ? [...container.children] : getComposedChildren(container)).map(
+      traverse,
+    );
   }
 
   return normalizeRadioGroup(
-    sortByTabIndex(filter ? candidates.filter(filter) : candidates),
+    sortByTabIndex(!filter ? candidates : candidates.filter(filter)),
   );
 }
 
@@ -209,9 +211,9 @@ export function isFocusable(
 
   if (
     !element.matches(
-      skipNegativeTabIndexCheck
-        ? FOCUSABLE_SELECTOR_WITH_NEGATIVE_TABINDEX
-        : FOCUSABLE_SELECTOR,
+      !skipNegativeTabIndexCheck
+        ? FOCUSABLE_SELECTOR
+        : FOCUSABLE_SELECTOR_WITH_NEGATIVE_TABINDEX,
     )
   ) {
     return false;
@@ -498,9 +500,9 @@ function applyInert(element: Element): boolean {
     inertRefCounts.set(element, count + 1);
     !count && element.setAttribute('inert', '');
     return true;
-  } else {
-    return false;
   }
+
+  return false;
 }
 
 function restoreInert(element: Element): void {
