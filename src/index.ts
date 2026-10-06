@@ -423,14 +423,14 @@ export function containsComposed(container: Node, element: Node): boolean {
   while (current) {
     if (current === container) {
       return true;
-    } else {
-      current =
-        current instanceof ShadowRoot
-          ? current.mode === 'open'
-            ? current.host
-            : null
-          : current.parentNode;
     }
+
+    current =
+      current instanceof ShadowRoot
+        ? current.mode === 'open'
+          ? current.host
+          : null
+        : current.parentNode;
   }
 
   return false;
@@ -463,14 +463,14 @@ function getComposedChildren(node: Node): Element[] {
 function getComposedParent(node: Node): Element | null {
   if (node instanceof Element && node.assignedSlot) {
     return node.assignedSlot;
-  } else {
-    const parent = node.parentNode;
-    return parent instanceof ShadowRoot
-      ? parent.host
-      : parent instanceof Element
-        ? parent
-        : null;
   }
+
+  const parent = node.parentNode;
+  return parent instanceof ShadowRoot
+    ? parent.host
+    : parent instanceof Element
+      ? parent
+      : null;
 }
 
 function getComposedSiblings(node: Element): Element[] {
@@ -515,9 +515,10 @@ function restoreInert(element: Element): void {
   if (count === 1) {
     inertRefCounts.delete(element);
     element.removeAttribute('inert');
-  } else {
-    inertRefCounts.set(element, count - 1);
+    return;
   }
+
+  inertRefCounts.set(element, count - 1);
 }
 
 export function focusElement(element: Element): void {

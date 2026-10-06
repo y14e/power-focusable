@@ -1,6 +1,6 @@
 {
   "name": "power-focusable",
-  "version": "4.4.7",
+  "version": "4.4.8",
   "description": "High-precision focus management utility with full composed tree support",
   "keywords": [
     "a11y",
