@@ -105,9 +105,9 @@ export function getFocusables(
 
   if (!composed && !include) {
     for (const match of container.querySelectorAll(
-      skipNegativeTabIndexCheck
-        ? FOCUSABLE_SELECTOR_WITH_NEGATIVE_TABINDEX
-        : FOCUSABLE_SELECTOR,
+      !skipNegativeTabIndexCheck
+        ? FOCUSABLE_SELECTOR
+        : FOCUSABLE_SELECTOR_WITH_NEGATIVE_TABINDEX,
     )) {
       match &&
         isFocusable(match, {
