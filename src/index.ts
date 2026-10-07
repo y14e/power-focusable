@@ -51,9 +51,13 @@ class FocusTrap {
 
   #initialize(): void {
     this.#controller = new AbortController();
-    this.#container.addEventListener('keydown', this.#onKeyDown, {
-      signal: this.#controller.signal,
-    });
+    (this.#container as HTMLElement).addEventListener(
+      'keydown',
+      this.#onKeyDown,
+      {
+        signal: this.#controller.signal,
+      },
+    );
     focusElement(this.#container);
 
     if (getActiveElement() !== this.#container) {
@@ -62,11 +66,7 @@ class FocusTrap {
     }
   }
 
-  #onKeyDown = (event: Event): void => {
-    if (!(event instanceof KeyboardEvent)) {
-      return;
-    }
-
+  #onKeyDown = (event: KeyboardEvent): void => {
     const { key, altKey, ctrlKey, metaKey, shiftKey } = event;
 
     if (key !== 'Tab' || altKey || ctrlKey || metaKey) {
