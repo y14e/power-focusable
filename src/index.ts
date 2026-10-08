@@ -324,6 +324,8 @@ function isDisabledDeep(element: Element): boolean {
     }
 
     // fieldset[disabled]
+    // https://html.spec.whatwg.org/multipage/form-elements.html#the-fieldset-element
+    // https://html.spec.whatwg.org/multipage/form-control-infrastructure.html#concept-fe-disabled
     if (
       isFormControl(element) &&
       current.tagName === 'FIELDSET' &&
