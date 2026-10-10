@@ -3,7 +3,7 @@ import { isInert } from '@/utils';
 
 const inertRefCounts = new WeakMap<Element, number>();
 
-export function applyInert(element: Element): boolean {
+function applyInert(element: Element): boolean {
   if (!isInert(element) || inertRefCounts.has(element)) {
     const count = inertRefCounts.get(element) ?? 0;
     inertRefCounts.set(element, count + 1);
@@ -34,7 +34,7 @@ export function inertOutside(element: Element): () => void {
   return () => elements.map(restoreInert);
 }
 
-export function restoreInert(element: Element): void {
+function restoreInert(element: Element): void {
   const count = inertRefCounts.get(element);
 
   if (!count) {
