@@ -39,9 +39,7 @@ class FocusTrap {
     (this.#container as HTMLElement).addEventListener(
       'keydown',
       this.#onKeyDown,
-      {
-        signal: this.#controller.signal,
-      },
+      { signal: this.#controller.signal },
     );
     focusElement(this.#container);
 
