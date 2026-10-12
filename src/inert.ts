@@ -4,14 +4,14 @@ import { isInert } from '@/utils';
 const inertRefCounts = new WeakMap<Element, number>();
 
 function applyInert(element: Element): boolean {
-  if (!isInert(element) || inertRefCounts.has(element)) {
-    const count = inertRefCounts.get(element) ?? 0;
-    inertRefCounts.set(element, count + 1);
-    !count && element.setAttribute('inert', '');
-    return true;
+  if (isInert(element) && !inertRefCounts.has(element)) {
+    return false;
   }
 
-  return false;
+  const count = inertRefCounts.get(element) ?? 0;
+  inertRefCounts.set(element, count + 1);
+  !count && element.setAttribute('inert', '');
+  return true;
 }
 
 export function inertOutside(element: Element): () => void {
