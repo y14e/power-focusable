@@ -139,20 +139,20 @@ export function normalizeRadioGroup(elements: Element[]): Element[] {
     }
 
     const root = element.getRootNode();
-    const groups = map.getOrInsert(root, new Map());
+    const groups = map.get(root) ?? map.set(root, new Map()).get(root);
 
     if (!groups) {
       continue;
     }
 
     const { form, name } = element;
-    const radios = groups.getOrInsert(form, new Map());
+    const radios = groups.get(form) ?? groups.set(form, new Map()).get(form);
 
     if (!radios) {
       continue;
     }
 
-    radios.getOrInsert(name, []).push(element);
+    (radios.get(name) ?? radios.set(name, []).get(name))?.push(element);
   }
 
   if (!map) {

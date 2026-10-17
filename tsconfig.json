@@ -22,7 +22,6 @@
     "verbatimModuleSyntax": true,
 
     // language-and-environment
-    "lib": ["ESNext", "DOM", "DOM.Iterable"],
     "target": "ES2022",
 
     // completeness
