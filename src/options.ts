@@ -1,5 +1,5 @@
-import type { PowerFocusableOptions as Options } from '@/types';
-import { getActiveElement } from '@/utils';
+import type { PowerFocusableOptions as Options } from './types';
+import { getActiveElement } from './utils';
 
 export function resolveOptions(options: Partial<Options>): Options {
   let {

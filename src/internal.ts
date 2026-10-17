@@ -1,14 +1,14 @@
-import { containsComposed } from '@/composed';
-import { getFocusables } from '@/index';
-import { resolveOptions } from '@/options';
-import type { PowerFocusableOptions as Options } from '@/types';
+import { containsComposed } from './composed';
+import { getFocusables } from './index';
+import { resolveOptions } from './options';
+import type { PowerFocusableOptions as Options } from './types';
 import {
   getTabIndex,
   isDisabled,
   isFormControl,
   isInert,
   isUngroupedRadio,
-} from '@/utils';
+} from './utils';
 
 export function getRelativeFocusable(
   container: Element,
@@ -139,20 +139,20 @@ export function normalizeRadioGroup(elements: Element[]): Element[] {
     }
 
     const root = element.getRootNode();
-    const groups = map.get(root) ?? map.set(root, new Map()).get(root);
+    const groups = map.getOrInsert(root, new Map());
 
     if (!groups) {
       continue;
     }
 
     const { form, name } = element;
-    const radios = groups.get(form) ?? groups.set(form, new Map()).get(form);
+    const radios = groups.getOrInsert(form, new Map());
 
     if (!radios) {
       continue;
     }
 
-    (radios.get(name) ?? radios.set(name, []).get(name))?.push(element);
+    radios.getOrInsert(name, []).push(element);
   }
 
   if (!map) {

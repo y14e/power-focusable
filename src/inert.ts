@@ -1,5 +1,5 @@
-import { getComposedParent, getComposedSiblings } from '@/composed';
-import { isInert } from '@/utils';
+import { getComposedParent, getComposedSiblings } from './composed';
+import { isInert } from './utils';
 
 const inertRefCounts = new WeakMap<Element, number>();
 

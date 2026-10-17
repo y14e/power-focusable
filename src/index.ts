@@ -1,19 +1,19 @@
-import { containsComposed, getComposedChildren } from '@/composed';
+import { containsComposed, getComposedChildren } from './composed';
 import {
   FOCUSABLE_SELECTOR,
   FOCUSABLE_SELECTOR_WITH_NEGATIVE_TABINDEX,
-} from '@/constants';
-import { createFocusTrap } from '@/focus-trap';
-import { inertOutside } from '@/inert';
+} from './constants';
+import { createFocusTrap } from './focus-trap';
+import { inertOutside } from './inert';
 import {
   getRelativeFocusable,
   isDisabledDeep,
   normalizeRadioGroup,
   sortByTabIndex,
-} from '@/internal';
-import { resolveOptions } from '@/options';
-import type { PowerFocusableOptions as Options } from '@/types';
-import { focusElement, getActiveElement, getTabIndex, isInert } from '@/utils';
+} from './internal';
+import { resolveOptions } from './options';
+import type { PowerFocusableOptions as Options } from './types';
+import { focusElement, getActiveElement, getTabIndex, isInert } from './utils';
 
 export function getFocusables(
   container: Element = document.body,

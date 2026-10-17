@@ -1,6 +1,6 @@
-import { getFocusables } from '@/index';
-import { getRelativeFocusable } from '@/internal';
-import { focusElement, getActiveElement } from '@/utils';
+import { getFocusables } from './index';
+import { getRelativeFocusable } from './internal';
+import { focusElement, getActiveElement } from './utils';
 
 export function createFocusTrap(
   container: Element = document.body,
