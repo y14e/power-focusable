@@ -24,7 +24,7 @@ export function inertOutside(element: Element): () => void {
     const parent = getComposedParent(node);
 
     if (parent) {
-      getComposedSiblings(node).map(callback);
+      getComposedSiblings(node).forEach(callback);
       traverse(parent, callback);
     }
   }
