@@ -35,16 +35,16 @@ import { ... } 'https://esm.unpkg.com/power-focusable@<x.x.x>';
 
 ```ts
 interface PowerFocusableOptions {
-  anchor: Element | null;                 // default: DocumentOrShadowRoot.activeElement
-  composed: boolean;                      // default: false
-  filter: PredicateFunction | undefined;  // default: undefined
-  include: PredicateFunction | undefined; // default: undefined
-  skipNegativeTabIndexCheck: boolean;     // default: false
-  skipVisibilityCheck: boolean;           // default: false
-  wrap: boolean;                          // default: false
+  anchor: Element | null;             // default: DocumentOrShadowRoot.activeElement
+  composed: boolean;                  // default: false
+  filter: Predicate | undefined;      // default: undefined
+  include: Predicate | undefined;     // default: undefined
+  skipNegativeTabIndexCheck: boolean; // default: false
+  skipVisibilityCheck: boolean;       // default: false
+  wrap: boolean;                      // default: false
 }
 
-type PredicateFunction = (element: Element) => boolean;
+type Predicate = (element: Element) => boolean;
 ```
 
 ### `anchor`
