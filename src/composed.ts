@@ -47,11 +47,7 @@ export function getComposedParent(node: Node): Element | null {
   }
 
   const parent = node.parentNode;
-  return parent instanceof ShadowRoot
-    ? parent.host
-    : parent instanceof Element
-      ? parent
-      : null;
+  return parent instanceof ShadowRoot ? parent.host : parent instanceof Element ? parent : null;
 }
 
 export function getComposedSiblings(node: Element): Element[] {

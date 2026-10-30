@@ -2,9 +2,7 @@ import { getFocusables } from './index';
 import { getRelativeFocusable } from './internal';
 import { focusElement, getActiveElement } from './utils';
 
-export function createFocusTrap(
-  container: Element = document.body,
-): () => void {
+export function createFocusTrap(container: Element = document.body): () => void {
   if (!(container instanceof Element)) {
     console.warn('Invalid container element. Fallback: <body> element.');
     container = document.body;
@@ -36,11 +34,9 @@ class FocusTrap {
 
   #initialize(): void {
     this.#controller = new AbortController();
-    (this.#container as HTMLElement).addEventListener(
-      'keydown',
-      this.#onKeyDown,
-      { signal: this.#controller.signal },
-    );
+    (this.#container as HTMLElement).addEventListener('keydown', this.#onKeyDown, {
+      signal: this.#controller.signal,
+    });
     focusElement(this.#container);
 
     if (getActiveElement() !== this.#container) {

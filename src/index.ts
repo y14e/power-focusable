@@ -1,8 +1,5 @@
 import { containsComposed, getComposedChildren } from './composed';
-import {
-  FOCUSABLE_SELECTOR,
-  FOCUSABLE_SELECTOR_WITH_NEGATIVE_TABINDEX,
-} from './constants';
+import { FOCUSABLE_SELECTOR, FOCUSABLE_SELECTOR_WITH_NEGATIVE_TABINDEX } from './constants';
 import { createFocusTrap } from './focus-trap';
 import { inertOutside } from './inert';
 import {
@@ -24,53 +21,34 @@ export function getFocusables(
     container = document.body;
   }
 
-  const {
-    composed,
-    filter,
-    include,
-    skipNegativeTabIndexCheck,
-    skipVisibilityCheck,
-  } = resolveOptions(options);
+  const { composed, filter, include, skipNegativeTabIndexCheck, skipVisibilityCheck } =
+    resolveOptions(options);
   const candidates: Element[] = [];
 
   if (!composed && !include) {
     for (const match of container.querySelectorAll(
-      !skipNegativeTabIndexCheck
-        ? FOCUSABLE_SELECTOR
-        : FOCUSABLE_SELECTOR_WITH_NEGATIVE_TABINDEX,
+      !skipNegativeTabIndexCheck ? FOCUSABLE_SELECTOR : FOCUSABLE_SELECTOR_WITH_NEGATIVE_TABINDEX,
     )) {
       match &&
-        isFocusable(match, {
-          skipNegativeTabIndexCheck,
-          skipVisibilityCheck,
-        }) &&
+        isFocusable(match, { skipNegativeTabIndexCheck, skipVisibilityCheck }) &&
         candidates.push(match);
     }
   } else {
     function traverse(node: Element): void {
       if (
-        isFocusable(node, {
-          skipNegativeTabIndexCheck,
-          skipVisibilityCheck,
-        }) ||
+        isFocusable(node, { skipNegativeTabIndexCheck, skipVisibilityCheck }) ||
         include?.(node)
       ) {
         candidates.push(node);
       }
 
-      (!composed ? [...node.children] : getComposedChildren(node)).map(
-        traverse,
-      );
+      (!composed ? [...node.children] : getComposedChildren(node)).map(traverse);
     }
 
-    (!composed ? [...container.children] : getComposedChildren(container)).map(
-      traverse,
-    );
+    (!composed ? [...container.children] : getComposedChildren(container)).map(traverse);
   }
 
-  return normalizeRadioGroup(
-    sortByTabIndex(!filter ? candidates : candidates.filter(filter)),
-  );
+  return normalizeRadioGroup(sortByTabIndex(!filter ? candidates : candidates.filter(filter)));
 }
 
 export function getNextFocusable(
@@ -96,18 +74,14 @@ export function hasFocusable(
 
 export function isFocusable(
   element: Element,
-  options: {
-    skipNegativeTabIndexCheck?: boolean;
-    skipVisibilityCheck?: boolean;
-  } = {},
+  options: { skipNegativeTabIndexCheck?: boolean; skipVisibilityCheck?: boolean } = {},
 ): boolean {
   if (!(element instanceof Element)) {
     console.warn('Invalid element');
     return false;
   }
 
-  const { skipNegativeTabIndexCheck, skipVisibilityCheck } =
-    resolveOptions(options);
+  const { skipNegativeTabIndexCheck, skipVisibilityCheck } = resolveOptions(options);
 
   // Fast path: [hidden], [inert]
   if (element.hasAttribute('hidden') || isInert(element)) {
@@ -121,9 +95,7 @@ export function isFocusable(
 
   if (
     !element.matches(
-      !skipNegativeTabIndexCheck
-        ? FOCUSABLE_SELECTOR
-        : FOCUSABLE_SELECTOR_WITH_NEGATIVE_TABINDEX,
+      !skipNegativeTabIndexCheck ? FOCUSABLE_SELECTOR : FOCUSABLE_SELECTOR_WITH_NEGATIVE_TABINDEX,
     )
   ) {
     return false;
@@ -148,10 +120,4 @@ export function isFocusable(
 }
 
 export type { Options as PowerFocusableOptions };
-export {
-  containsComposed,
-  createFocusTrap,
-  focusElement,
-  getActiveElement,
-  inertOutside,
-};
+export { containsComposed, createFocusTrap, focusElement, getActiveElement, inertOutside };

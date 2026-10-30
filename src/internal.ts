@@ -2,13 +2,7 @@ import { containsComposed } from './composed';
 import { getFocusables } from './index';
 import { resolveOptions } from './options';
 import type { PowerFocusableOptions as Options } from './types';
-import {
-  getTabIndex,
-  isDisabled,
-  isFormControl,
-  isInert,
-  isUngroupedRadio,
-} from './utils';
+import { getTabIndex, isDisabled, isFormControl, isInert, isUngroupedRadio } from './utils';
 
 export function getRelativeFocusable(
   container: Element,
@@ -99,16 +93,8 @@ export function isDisabledDeep(element: Element): boolean {
     // fieldset[disabled]
     // https://html.spec.whatwg.org/multipage/form-elements.html#the-fieldset-element
     // https://html.spec.whatwg.org/multipage/form-control-infrastructure.html#concept-fe-disabled
-    if (
-      isFormControl(element) &&
-      current.tagName === 'FIELDSET' &&
-      isDisabled(current)
-    ) {
-      if (
-        !current
-          .querySelector(':scope > legend:first-of-type')
-          ?.contains(element)
-      ) {
+    if (isFormControl(element) && current.tagName === 'FIELDSET' && isDisabled(current)) {
+      if (!current.querySelector(':scope > legend:first-of-type')?.contains(element)) {
         return true;
       }
     }
@@ -120,10 +106,7 @@ export function isDisabledDeep(element: Element): boolean {
 }
 
 export function normalizeRadioGroup(elements: Element[]): Element[] {
-  let map: Map<
-    Node,
-    Map<HTMLFormElement | null, Map<string, HTMLInputElement[]>>
-  > | null = null;
+  let map: Map<Node, Map<HTMLFormElement | null, Map<string, HTMLInputElement[]>>> | null = null;
 
   for (const element of elements) {
     if (!(element instanceof HTMLInputElement)) {
@@ -187,7 +170,5 @@ export function sortByTabIndex(elements: Element[]): Element[] {
     (getTabIndex(element) > 0 ? ordered : natural).push(element);
   }
 
-  return ordered
-    .sort((a, b) => getTabIndex(a) - getTabIndex(b))
-    .concat(natural);
+  return ordered.sort((a, b) => getTabIndex(a) - getTabIndex(b)).concat(natural);
 }

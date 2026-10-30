@@ -27,16 +27,12 @@ export function resolveOptions(options: Partial<Options>): Options {
   }
 
   if (filter !== undefined && typeof filter !== 'function') {
-    console.warn(
-      'Invalid filter function. Fallback: no filter function (undefined).',
-    );
+    console.warn('Invalid filter function. Fallback: no filter function (undefined).');
     filter = undefined;
   }
 
   if (include !== undefined && typeof include !== 'function') {
-    console.warn(
-      'Invalid include function. Fallback: no include function (undefined).',
-    );
+    console.warn('Invalid include function. Fallback: no include function (undefined).');
     include = undefined;
   }
 
