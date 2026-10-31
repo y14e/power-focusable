@@ -13,7 +13,7 @@ export function getActiveElement(): Element | null {
 }
 
 export function getTabIndex(element: Element): number {
-  return 'tabIndex' in element ? Number(element.tabIndex) : 0;
+  return 'tabIndex' in element ? Number(element.tabIndex) : -1;
 }
 
 export function isDisabled(element: Element): boolean {
@@ -28,6 +28,6 @@ export function isInert(element: Element): boolean {
   return 'inert' in element && !!element.inert;
 }
 
-export function isUngroupedRadio(element: HTMLInputElement): boolean {
-  return element.type === 'radio' && !!element.name;
+export function isUngroupedRadio(input: HTMLInputElement): boolean {
+  return input.type === 'radio' && !!input.name;
 }
