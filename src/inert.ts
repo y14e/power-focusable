@@ -1,15 +1,15 @@
 import { getComposedParent, getComposedSiblings } from './composed';
 import { isInert } from './utils';
 
-const inertRefCounts = new WeakMap<Element, number>();
+const counts = new WeakMap<Element, number>();
 
 function applyInert(element: Element): boolean {
-  if (isInert(element) && !inertRefCounts.has(element)) {
+  if (isInert(element) && !counts.has(element)) {
     return false;
   }
 
-  const count = inertRefCounts.get(element) ?? 0;
-  inertRefCounts.set(element, count + 1);
+  const count = counts.get(element) ?? 0;
+  counts.set(element, count + 1);
   !count && element.setAttribute('inert', '');
   return true;
 }
@@ -35,17 +35,17 @@ export function inertOutside(element: Element): () => void {
 }
 
 function restoreInert(element: Element): void {
-  const count = inertRefCounts.get(element);
+  const count = counts.get(element);
 
   if (!count) {
     return;
   }
 
   if (count === 1) {
-    inertRefCounts.delete(element);
+    counts.delete(element);
     element.removeAttribute('inert');
     return;
   }
 
-  inertRefCounts.set(element, count - 1);
+  counts.set(element, count - 1);
 }

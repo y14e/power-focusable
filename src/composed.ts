@@ -57,14 +57,9 @@ export function getComposedSiblings(node: Element): Element[] {
     return [];
   }
 
-  const filtered: Element[] = [];
-
-  for (const sibling of (parent instanceof HTMLSlotElement
-    ? parent.assignedElements({ flatten: true })
-    : getComposedChildren(parent)
-  ).filter((s) => s !== node)) {
-    filtered.push(sibling);
-  }
-
-  return filtered;
+  return (
+    parent instanceof HTMLSlotElement
+      ? parent.assignedElements({ flatten: true })
+      : getComposedChildren(parent)
+  ).filter((s) => s !== node);
 }
