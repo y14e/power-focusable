@@ -52,14 +52,10 @@ export function getComposedParent(node: Node): Element | null {
 
 export function getComposedSiblings(node: Element): Element[] {
   const parent = getComposedParent(node);
-
-  if (!parent) {
-    return [];
-  }
-
-  return (
-    parent instanceof HTMLSlotElement
-      ? parent.assignedElements({ flatten: true })
-      : getComposedChildren(parent)
-  ).filter((s) => s !== node);
+  return parent
+    ? (parent instanceof HTMLSlotElement
+        ? parent.assignedElements({ flatten: true })
+        : getComposedChildren(parent)
+      ).filter((s) => s !== node)
+    : [];
 }
