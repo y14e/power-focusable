@@ -34,15 +34,15 @@ export function getFocusables(
         candidates.push(match);
     }
   } else {
-    function traverse(node: Element): void {
+    function traverse(element: Element): void {
       if (
-        isFocusable(node, { skipNegativeTabIndexCheck, skipVisibilityCheck }) ||
-        include?.(node)
+        isFocusable(element, { skipNegativeTabIndexCheck, skipVisibilityCheck }) ||
+        include?.(element)
       ) {
-        candidates.push(node);
+        candidates.push(element);
       }
 
-      (!composed ? [...node.children] : getComposedChildren(node)).map(traverse);
+      (!composed ? [...element.children] : getComposedChildren(element)).map(traverse);
     }
 
     (!composed ? [...container.children] : getComposedChildren(container)).map(traverse);

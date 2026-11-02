@@ -1,5 +1,5 @@
-export function containsComposed(container: Node, element: Node): boolean {
-  let current: Node | null = element;
+export function containsComposed(container: Element, element: Element): boolean {
+  let current: ParentNode | null = element;
 
   while (current) {
     if (current === container) {
@@ -17,45 +17,45 @@ export function containsComposed(container: Node, element: Node): boolean {
   return false;
 }
 
-export function getComposedChildren(node: Node): Element[] {
-  if (node instanceof ShadowRoot) {
-    return [...node.children];
+export function getComposedChildren(element: Element): Element[] {
+  if (element instanceof ShadowRoot) {
+    return [...element.children];
   }
 
-  if (!(node instanceof Element)) {
+  if (!(element instanceof Element)) {
     return [];
   }
 
-  if (node instanceof HTMLSlotElement) {
-    const assigned = node.assignedElements({ flatten: true });
+  if (element instanceof HTMLSlotElement) {
+    const assigned = element.assignedElements({ flatten: true });
 
     if (assigned.length) {
       return assigned;
     }
   }
 
-  if (node instanceof HTMLElement && node.shadowRoot?.mode === 'open') {
-    return [...node.shadowRoot.children];
+  if (element instanceof HTMLElement && element.shadowRoot?.mode === 'open') {
+    return [...element.shadowRoot.children];
   }
 
-  return [...node.children];
+  return [...element.children];
 }
 
-export function getComposedParent(node: Node): Element | null {
-  if (node instanceof Element && node.assignedSlot) {
-    return node.assignedSlot;
+export function getComposedParent(element: Element): Element | null {
+  if (element instanceof Element && element.assignedSlot) {
+    return element.assignedSlot;
   }
 
-  const parent = node.parentNode;
+  const parent = element.parentNode;
   return parent instanceof ShadowRoot ? parent.host : parent instanceof Element ? parent : null;
 }
 
-export function getComposedSiblings(node: Element): Element[] {
-  const parent = getComposedParent(node);
+export function getComposedSiblings(element: Element): Element[] {
+  const parent = getComposedParent(element);
   return parent
     ? (parent instanceof HTMLSlotElement
         ? parent.assignedElements({ flatten: true })
         : getComposedChildren(parent)
-      ).filter((s) => s !== node)
+      ).filter((s) => s !== element)
     : [];
 }

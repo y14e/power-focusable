@@ -20,17 +20,17 @@ export function inertOutside(element: Element): () => void {
     return () => {};
   }
 
-  function traverse(node: Element, callback: (_: Element) => void): void {
-    const parent = getComposedParent(node);
+  function traverse(element: Element, callback: (_: Element) => void): void {
+    const parent = getComposedParent(element);
 
     if (parent) {
-      getComposedSiblings(node).forEach(callback);
+      getComposedSiblings(element).map(callback);
       traverse(parent, callback);
     }
   }
 
   const elements: Element[] = [];
-  traverse(element, (node) => node && applyInert(node) && elements.push(node));
+  traverse(element, (e) => applyInert(e) && elements.push(e));
   return () => elements.map(restoreInert);
 }
 

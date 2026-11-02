@@ -63,7 +63,7 @@ export function getRelativeFocusable(
 }
 
 export function isDisabledDeep(element: Element): boolean {
-  let current: Node | null = element;
+  let current: ParentNode | null = element;
 
   while (current) {
     if (current instanceof ShadowRoot) {
