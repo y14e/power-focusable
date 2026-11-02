@@ -93,10 +93,13 @@ export function isDisabledDeep(element: Element): boolean {
     // fieldset[disabled]
     // https://html.spec.whatwg.org/multipage/form-elements.html#the-fieldset-element
     // https://html.spec.whatwg.org/multipage/form-control-infrastructure.html#concept-fe-disabled
-    if (isFormControl(element) && current.tagName === 'FIELDSET' && isDisabled(current)) {
-      if (!current.querySelector(':scope > legend:first-of-type')?.contains(element)) {
-        return true;
-      }
+    if (
+      isFormControl(element) &&
+      current.tagName === 'FIELDSET' &&
+      isDisabled(current) &&
+      !current.querySelector(':scope > legend:first-of-type')?.contains(element)
+    ) {
+      return true;
     }
 
     current = current.parentNode;
@@ -109,11 +112,7 @@ export function normalizeRadioGroup(elements: Element[]): Element[] {
   let map: Map<Node, Map<HTMLFormElement | null, Map<string, HTMLInputElement[]>>> | null = null;
 
   for (const element of elements) {
-    if (!(element instanceof HTMLInputElement)) {
-      continue;
-    }
-
-    if (!isUngroupedRadio(element)) {
+    if (!(element instanceof HTMLInputElement) || !isUngroupedRadio(element)) {
       continue;
     }
 
