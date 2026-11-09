@@ -152,22 +152,14 @@ export function normalizeRadioGroup(elements: Element[]): Element[] {
     }
   }
 
-  return elements.filter((element) => {
-    if (!(element instanceof HTMLInputElement)) {
-      return true;
-    }
-
-    return !isUngroupedRadio(element) || placeholder.has(element);
-  });
+  return elements.filter(
+    (e) => !(e instanceof HTMLInputElement) || !isUngroupedRadio(e) || placeholder.has(e),
+  );
 }
 
 export function sortByTabIndex(elements: Element[]): Element[] {
-  const ordered: Element[] = [];
-  const natural: Element[] = [];
-
-  for (const element of elements) {
-    (getTabIndex(element) > 0 ? ordered : natural).push(element);
-  }
-
-  return ordered.sort((a, b) => getTabIndex(a) - getTabIndex(b)).concat(natural);
+  return elements
+    .filter((e) => getTabIndex(e) > 0)
+    .sort((a, b) => getTabIndex(a) - getTabIndex(b))
+    .concat(elements.filter((e) => getTabIndex(e) <= 0));
 }
