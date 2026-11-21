@@ -108,7 +108,7 @@ export function isDisabledDeep(element: Element): boolean {
   return false;
 }
 
-export function normalizeRadioGroup(elements: Element[]): Element[] {
+export function normalizeRadioGroup(elements: ReadonlyArray<Element>): Element[] {
   let map: Map<Node, Map<HTMLFormElement | null, Map<string, HTMLInputElement[]>>> | null = null;
 
   for (const element of elements) {
@@ -138,7 +138,7 @@ export function normalizeRadioGroup(elements: Element[]): Element[] {
   }
 
   if (!map) {
-    return elements;
+    return elements.slice();
   }
 
   const placeholder = new Set<HTMLInputElement>();
@@ -157,7 +157,7 @@ export function normalizeRadioGroup(elements: Element[]): Element[] {
   );
 }
 
-export function sortByTabIndex(elements: Element[]): Element[] {
+export function sortByTabIndex(elements: ReadonlyArray<Element>): Element[] {
   return elements
     .filter((e) => getTabIndex(e) > 0)
     .sort((a, b) => getTabIndex(a) - getTabIndex(b))
